@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0,
+          maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+            integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <title>로그인 페이지</title>
+</head>
+<body>
+<div id="login-form">
+    <div>
+        <!-- 회원가입 버튼 -->
+        <button id="login-id-btn" onclick="location.href='/api/member/signup'">회원 가입하기</button>
+    </div>
+
+    <!-- 기본 폼 전송(form action) 대신, JS(AJAX)로 JSON 요청 보냄 -->
+    <form onsubmit="onLogin(); return false;">
+        <div class="login-id-label">이메일</div>
+        <input type="text" name="email" id="email" autocomplete="email" class="login-input-box" required>
+
+        <div class="login-id-label">비밀번호</div>
+        <input type="password" name="password" id="password" autocomplete="current-password" class="login-input-box" required>
+
+        <button type="submit" id="login-id-submit">로그인</button>
+    </form>
+
+    <div id="login-failed" style="display: none" class="alert alert-danger">
+        로그인에 실패하였습니다.
+    </div>
+</div>
+
+<script>
+    // 페이지 로딩 후
+    $(document).ready(function () {
+        // 혹시 남아있을 수도 있는 쿠키 삭제 (옵션)
+        Cookies.remove('Authorization', { path: '/' });
+    });
+
+    // 현재 URL에서 ? 이후의 쿼리스트링 체크 (예: "?error")
+    const href = location.href;
+    const queryString = href.substring(href.indexOf("?") + 1);
+    if (queryString === 'error') {
+        const errorDiv = document.getElementById('login-failed');
+        errorDiv.style.display = 'block';
+    }
+
+    function onLogin() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        // AJAX로 JSON 요청
+        $.ajax({
+            type: "POST",
+            url: "/api/member/login",
+            contentType: "application/json; charset=UTF-8",
+            data: JSON.stringify({ email: email, password: password }),
+            success: function (response) {
+                console.log("로그인 성공", response);
+                // 서버에서 response.sendRedirect("/") 했을 수도 있으므로,
+                // 여기서도 수동으로 페이지 이동 가능
+                window.location.href = "/";
+            },
+            error: function (xhr, status, error) {
+                console.error("로그인 실패", xhr.responseText);
+                $('#login-failed').show();
+            },
+        });
+    }
+</script>
+</body>
+</html>

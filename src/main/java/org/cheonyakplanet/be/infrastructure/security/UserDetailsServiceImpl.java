@@ -1,0 +1,29 @@
+package org.cheonyakplanet.be.infrastructure.security;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.cheonyakplanet.be.domain.entity.User;
+import org.cheonyakplanet.be.domain.repository.UserRepository;
+import org.cheonyakplanet.be.presentation.exception.CustomException;
+import org.cheonyakplanet.be.presentation.exception.ErrorCode;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class UserDetailsServiceImpl  implements UserDetailsService {
+
+    private final UserRepository userRepositpry;
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        log.info("loadUserByUsername called with email: {}", email);
+        User user = userRepositpry.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.SIGN001,"일치하는 이메일 없음"));
+        log.info("User found: {}", user);
+        return new UserDetailsImpl(user);
+    }
+}
