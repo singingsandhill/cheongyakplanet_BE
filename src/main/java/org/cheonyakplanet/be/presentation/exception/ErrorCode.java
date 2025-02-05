@@ -21,6 +21,8 @@ public enum ErrorCode {
     AUTH005("AUTH005","유효하지 않은 토큰"),
     AUTH010("AUTH010","토큰 없음"),
 
+    //community
+    COMU001("COMU001","게시글 없음"),
 
     // Other
     OTHER001("OTHER001","필터 부분 에러"),
