@@ -1,12 +1,15 @@
 package org.cheonyakplanet.be.domain.service;
 
 import lombok.RequiredArgsConstructor;
+import org.cheonyakplanet.be.application.dto.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Comment;
 import org.cheonyakplanet.be.domain.entity.Post;
 import org.cheonyakplanet.be.domain.entity.Reply;
 import org.cheonyakplanet.be.domain.repository.CommentRepository;
 import org.cheonyakplanet.be.domain.repository.PostRepository;
 import org.cheonyakplanet.be.domain.repository.ReplyRepository;
+import org.cheonyakplanet.be.presentation.exception.CustomException;
+import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +23,10 @@ public class CommunityService {
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
 
-    public Post createPost(String title, String content) {
+    public Post createPost(PostDTO postDTO) {
         Post post = Post.builder()
-                .title(title)
-                .content(content)
+                .title(postDTO.getTitle())
+                .content(postDTO.getContent())
                 .likes(0)
                 .build();
         return postRepository.save(post);
@@ -38,7 +41,7 @@ public class CommunityService {
     }
 
     public Post getPostById(Long id) {
-        return postRepository.findById(id).orElseThrow(() -> new RuntimeException("Post not found"));
+        return postRepository.findById(id).orElseThrow(() -> new CustomException(ErrorCode.COMU001,"해당 게시글 없음"));
     }
 
     public List<Post> getPopularPosts() {
