@@ -1,7 +1,7 @@
 package org.cheonyakplanet.be.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.filters.CorsFilter;
+import org.springframework.web.filter.CorsFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtAuthenticationFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtAuthorizationFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
@@ -19,6 +19,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @RequiredArgsConstructor
 @Configuration
@@ -51,8 +53,7 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()))
-                .csrf(csrf -> csrf.disable());
+        http.csrf(csrf -> csrf.disable());
 
         http.exceptionHandling(exceptionHandling -> exceptionHandling
                 .authenticationEntryPoint(customAuthenticationEntryPoint) // 인증 실패 처리
@@ -83,6 +84,7 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated()
         );
 
+        http.addFilterBefore(corsFilter(), JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthorizationFilter(), JwtAuthenticationFilter.class);
         http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
