@@ -12,6 +12,7 @@ import org.cheonyakplanet.be.application.dto.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
 import org.cheonyakplanet.be.domain.repository.UserRepository;
+import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
@@ -39,6 +40,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final UserTokenRepository userTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final RestTemplate restTemplate;
@@ -56,9 +58,8 @@ public class UserService {
         String username = requestDTO.getUsername();
 
         // 중복 확인
-        Optional<User> checkEmail = userRepository.findByEmail(useremail);
-        if(checkEmail.isPresent()){
-            throw new CustomException(ErrorCode.SIGN002,"중복된 이메일 존재");
+        if (userRepository.findByEmail(useremail).isPresent()) {
+            throw new CustomException(ErrorCode.SIGN002, "중복된 이메일 존재");
         }
 
         //  사용자 role 확인
@@ -94,8 +95,9 @@ public class UserService {
             // 2) 인증 성공 시 JWT 생성
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             UserRoleEnum role = principal.getUser().getRole();
-            String accessToken = jwtUtil.createToken(principal.getUsername(), role);
-            String refreshToken = jwtUtil.generateRefreshToken(principal.getUsername());
+            String accessToken = jwtUtil.createAccessToken(principal.getUsername(), role);
+            String refreshToken = jwtUtil.createRefreshToken(principal.getUsername());
+            jwtUtil.storeTokens(principal.getUsername(), accessToken, refreshToken);
 
             ApiResponse apiResponse = new ApiResponse("success", Map.of(
                     "accessToken", accessToken,
@@ -104,8 +106,20 @@ public class UserService {
 
             return apiResponse;
         } catch (Exception e) {
+            log.info(e.getMessage());
+            log.error("Authentication failed",e);
             throw new CustomException(ErrorCode.SIGN004,"로그인 정보 불일치");
         }
+    }
+
+    public ApiResponse logout(String token) {
+        if (token == null || token.isBlank()) {
+            throw new CustomException(ErrorCode.AUTH010, "토큰 없음");
+        }
+        String pureToken = jwtUtil.substringToken(token);
+        String email = jwtUtil.getUserInfoFromToken(pureToken).getSubject();
+        jwtUtil.deleteTokens(email);
+        return new ApiResponse("success", "로그아웃이 완료되었습니다.");
     }
 
     public String kakaoLogin(String code) throws JsonProcessingException {
@@ -114,8 +128,9 @@ public class UserService {
 
         // 2. 토큰으로 카카오 API 호출 : "액세스 토큰"으로 "카카오 사용자 정보" 가져오기
         KakaoUserInfoDto kakaoUserInfo = getKakaoUserInfo(accessToken);
+        // TODO: 사용자 존재 여부 확인 후 신규 등록 또는 연동 처리
 
-        return null;
+        return kakaoUserInfo.getEmail();
     }
 
     private String getToken(String code) throws JsonProcessingException {
@@ -188,5 +203,24 @@ public class UserService {
 
         log.info("카카오 사용자 정보: " + id + ", " + nickname + ", " + email);
         return new KakaoUserInfoDto(id, nickname, email);
+    }
+
+    public ApiResponse refreshAccessToken(String refreshToken) {
+        // Remove Bearer prefix if present
+        String pureToken = jwtUtil.substringToken(refreshToken);
+
+        String email = jwtUtil.getUserInfoFromToken(pureToken).getSubject();
+        Optional<?> storedTokenOpt = userTokenRepository.findByEmail(email);
+        if (storedTokenOpt.isEmpty() ||
+                !jwtUtil.substringToken(((org.cheonyakplanet.be.domain.entity.UserToken) storedTokenOpt.get()).getRefreshToken())
+                        .equals(pureToken)) {
+            throw new CustomException(ErrorCode.AUTH005, "Refresh Token이 유효하지 않습니다.");
+        }
+
+        // Issue a new Access Token and update repository
+        String newAccessToken = jwtUtil.createAccessToken(email, UserRoleEnum.USER);
+        jwtUtil.storeTokens(email, newAccessToken, pureToken);
+
+        return new ApiResponse("success", Map.of("accessToken", newAccessToken));
     }
 }

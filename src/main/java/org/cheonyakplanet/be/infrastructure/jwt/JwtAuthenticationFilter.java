@@ -66,8 +66,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String email = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getEmail();
         UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
 
-        String token = jwtUtil.createToken(email, role);
-        jwtUtil.addJwtToCookie(token, response);
+        String token = jwtUtil.createAccessToken(email, role);
 
         response.sendRedirect("/");
     }
