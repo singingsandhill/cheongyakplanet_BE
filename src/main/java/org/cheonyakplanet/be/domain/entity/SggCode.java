@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "sggcode")
+@Table(catalog = "planet",name = "sggcode")
 @Getter
 @Setter
 @NoArgsConstructor

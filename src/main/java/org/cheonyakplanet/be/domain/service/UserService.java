@@ -58,7 +58,7 @@ public class UserService {
         // 중복 확인
         Optional<User> checkEmail = userRepository.findByEmail(useremail);
         if(checkEmail.isPresent()){
-            throw new CustomException(ErrorCode.SIGN002,"Email already in use");
+            throw new CustomException(ErrorCode.SIGN002,"중복된 이메일 존재");
         }
 
         //  사용자 role 확인

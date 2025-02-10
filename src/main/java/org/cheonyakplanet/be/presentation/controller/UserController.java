@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
@@ -15,12 +14,7 @@ import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Slf4j
 @RestController
@@ -34,6 +28,7 @@ public class UserController {
 
     /**
      * 회원가입
+     *
      * @param requestDTO
      * @return
      */
@@ -41,11 +36,12 @@ public class UserController {
     @Operation(summary = "회원가입")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDTO requestDTO) {
         userService.signup(requestDTO);
-        return ResponseEntity.ok(new ApiResponse("success",requestDTO));
+        return ResponseEntity.ok(new ApiResponse("success", requestDTO));
     }
 
     /**
      * 로그인
+     *
      * @param requestDto
      * @return
      */
@@ -58,6 +54,7 @@ public class UserController {
 
     /**
      * 로그아웃
+     *
      * @param request
      * @param response
      * @return
