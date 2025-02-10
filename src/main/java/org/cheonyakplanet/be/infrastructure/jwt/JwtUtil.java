@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.Key;
 import java.util.Base64;
@@ -37,7 +36,7 @@ public class JwtUtil {
     // token prefix
     public static final String BEARER_PREFIX = "Bearer ";
     // token exp
-    private final long TOKEN_TIME = 60*60*1000L; // 60min
+    private final long TOKEN_TIME = 60 * 60 * 1000L; // 60min
     private final long REFRESH_TOKEN_TIME = 24 * 60 * 60 * 1000L; // 1 days
 
     @Value("${jwt.secret.key}")
@@ -68,6 +67,7 @@ public class JwtUtil {
 
     /**
      * JWT 생성
+     *
      * @param email
      * @param role
      * @return
@@ -109,11 +109,12 @@ public class JwtUtil {
 
     /**
      * 생성된 JWT를 쿠키에 저장
+     *
      * @param token
      * @param response
      */
     public void addJwtToCookie(String token, HttpServletResponse response) {
-        try{
+        try {
             token = URLEncoder.encode(token, "UTF-8").replaceAll("\\+", "%20"); // 공백 제거를 위한 인코딩
 
             Cookie cookie = new Cookie(AUTHORIZATION_KEY, token);
@@ -128,6 +129,7 @@ public class JwtUtil {
 
     /**
      * JWT 토큰 prefix 제거
+     *
      * @param token
      * @return
      */
@@ -135,31 +137,33 @@ public class JwtUtil {
         if (StringUtils.hasText(token) && token.startsWith(BEARER_PREFIX)) {
             return token.substring(7);
         }
-        throw new CustomException(ErrorCode.AUTH010,"토큰 없음");
+        throw new CustomException(ErrorCode.AUTH010, "토큰 없음");
     }
 
     /**
      * JWT 검증
+     *
      * @param token
      * @return
      */
     public boolean validateToken(String token) {
-        try{
+        try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            throw new CustomException(ErrorCode.AUTH001,"Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
+            throw new CustomException(ErrorCode.AUTH001, "Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
         } catch (ExpiredJwtException e) {
-            throw new CustomException(ErrorCode.AUTH002,"Expired JWT token, 만료된 JWT token 입니다.");
+            throw new CustomException(ErrorCode.AUTH002, "Expired JWT token, 만료된 JWT token 입니다.");
         } catch (UnsupportedJwtException e) {
-            throw new CustomException(ErrorCode.AUTH003,"Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
+            throw new CustomException(ErrorCode.AUTH003, "Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
         } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.AUTH004,"JWT claims is empty, 잘못된 JWT 토큰 입니다.");
+            throw new CustomException(ErrorCode.AUTH004, "JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
     }
 
     /**
      * 토큰에서 사용자 정보 가져오기
+     *
      * @param token
      * @return
      */
@@ -169,6 +173,7 @@ public class JwtUtil {
 
     /**
      * Header에사 JWT 가져오기
+     *
      * @param request
      * @return
      */
@@ -176,7 +181,7 @@ public class JwtUtil {
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             if (!StringUtils.hasText(header.substring(7)) || !validateToken(header.substring(7))) {
-                throw new CustomException( ErrorCode.AUTH001,"Invalid or missing token");
+                throw new CustomException(ErrorCode.AUTH001, "Invalid or missing token");
             }
             return header.substring(7); // "Bearer " 이후의 토큰 반환
         }
