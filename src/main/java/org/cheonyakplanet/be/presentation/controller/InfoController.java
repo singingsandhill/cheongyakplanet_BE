@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 import org.cheonyakplanet.be.domain.service.InfoService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +24,9 @@ public class InfoController {
      * @return
      */
     @GetMapping("/subscription/{id}")
-    public String getSubscription(@PathVariable("id") Long id) {
+    public ResponseEntity<?> getSubscription(@PathVariable("id") Long id) {
         Optional<SubscriptionInfo> subscriptionInfo = infoService.getSubscriptionById(id);
-        return ResponseEntiy.ok(new ApiResponse( "success",subscriptionInfo));
+        return ResponseEntity.ok(new ApiResponse( "success",subscriptionInfo));
     }
 
     /**
