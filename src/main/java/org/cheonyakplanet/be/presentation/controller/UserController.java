@@ -1,6 +1,8 @@
 package org.cheonyakplanet.be.presentation.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -71,5 +73,17 @@ public class UserController {
         }
 
         return ResponseEntity.ok(new ApiResponse("success", "로그아웃이 완료되었습니다."));
+    }
+
+    @GetMapping("/kako/callback")
+    public String kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
+        String token = userService.kakaoLogin(code);
+
+        Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, token);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        return "redirect:/";
+
     }
 }
