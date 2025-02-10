@@ -1,11 +1,15 @@
 package org.cheonyakplanet.be.presentation.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.cheonyakplanet.be.application.dto.ApiResponse;
+import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 import org.cheonyakplanet.be.domain.service.InfoService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/info")
@@ -20,7 +24,8 @@ public class InfoController {
      */
     @GetMapping("/subscription/{id}")
     public String getSubscription(@PathVariable("id") Long id) {
-        return null;
+        Optional<SubscriptionInfo> subscriptionInfo = infoService.getSubscriptionById(id);
+        return ResponseEntiy.ok(new ApiResponse( "success",subscriptionInfo));
     }
 
     /**
