@@ -163,7 +163,7 @@ public class SubscriptionInfo {
     @Column(name = "tot_suply_hshldco")
     private Integer totSuplyHshldco; // 공급규모
 
-    private String Region;
+    private String region;
     private String city;
     private String district;
     private String detail;

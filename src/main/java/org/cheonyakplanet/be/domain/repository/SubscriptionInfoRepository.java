@@ -10,6 +10,6 @@ import java.util.List;
 public interface SubscriptionInfoRepository extends JpaRepository<SubscriptionInfo, Long> {
 
     // 특정 지역의 청약 리스트 조회
-    List<SubscriptionInfo> findByCityAndDistrict(String city, String district);
+    List<SubscriptionInfo> findByRegionAndCity(String region, String city);
 
 }

@@ -1,26 +1,27 @@
 package org.cheonyakplanet.be.presentation.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.application.dto.LoginRequestDTO;
 import org.cheonyakplanet.be.application.dto.SignupRequestDTO;
+import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
+import org.cheonyakplanet.be.domain.entity.UserToken;
+import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
+import org.cheonyakplanet.be.presentation.exception.CustomException;
+import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -31,9 +32,11 @@ public class UserController {
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
+    private final UserTokenRepository userTokenRepository;
 
     /**
      * 회원가입
+     *
      * @param requestDTO
      * @return
      */
@@ -41,11 +44,12 @@ public class UserController {
     @Operation(summary = "회원가입")
     public ResponseEntity<?> signup(@RequestBody SignupRequestDTO requestDTO) {
         userService.signup(requestDTO);
-        return ResponseEntity.ok(new ApiResponse("success",requestDTO));
+        return ResponseEntity.ok(new ApiResponse("success", requestDTO));
     }
 
     /**
      * 로그인
+     *
      * @param requestDto
      * @return
      */
@@ -58,6 +62,7 @@ public class UserController {
 
     /**
      * 로그아웃
+     *
      * @param request
      * @param response
      * @return
@@ -66,24 +71,26 @@ public class UserController {
     @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String token = jwtUtil.getTokenFromRequest(request);
-
-        if (token != null) {
-            // Refresh Token 무효화 처리
-            jwtUtil.invalidateRefreshToken(token);
-        }
-
-        return ResponseEntity.ok(new ApiResponse("success", "로그아웃이 완료되었습니다."));
+        return ResponseEntity.ok(userService.logout(token));
     }
 
     @GetMapping("/kako/callback")
-    public String kakaoLogin(@RequestParam String code, HttpServletResponse response) throws JsonProcessingException {
-        String token = userService.kakaoLogin(code);
+    public void kakaoLogin(@RequestParam String code, HttpServletResponse response) throws IOException {
+        String email = userService.kakaoLogin(code);
 
-        Cookie cookie = new Cookie(JwtUtil.AUTHORIZATION_HEADER, token);
-        cookie.setPath("/");
-        response.addCookie(cookie);
+        // 2. 저장된 Access Token 가져오기
+        String accessToken = jwtUtil.getAccessToken(email);
 
-        return "redirect:/";
+        // 3. 프론트엔드로 리다이렉트 (Access Token 포함)
+        response.sendRedirect("https://frontend-domain.com/oauth/callback?accessToken=" + accessToken);
 
     }
+
+    @PostMapping("/auth/refresh")
+    @Operation(summary = "토큰 갱신")
+    public ResponseEntity<?> refreshAccessToken(@RequestParam String refreshToken) {
+        ApiResponse response = userService.refreshAccessToken(refreshToken);
+        return ResponseEntity.ok(response);
+    }
+
 }

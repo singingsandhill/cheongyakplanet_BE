@@ -26,12 +26,14 @@ public class DataController {
     }
 
     @GetMapping("/mortgage")
+    @Operation(summary = "모기지 상품 불러오기")
     public ResponseEntity<?> getFinanceData(){
         String result = financeService.updateMortgageLoan();
         return ResponseEntity.ok(result);
     }
 
     @GetMapping("/hosueloan")
+    @Operation(summary = "주택담보 대출 상품 불어오기")
     public ResponseEntity<?> getHouseLoanData(){
         String result = financeService.updateRenthouse();
         return ResponseEntity.ok(result);

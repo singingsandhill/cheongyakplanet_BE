@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.domain.entity.Post;
 import org.cheonyakplanet.be.domain.service.CommunityService;
 import org.cheonyakplanet.be.domain.service.SubscriptionService;
@@ -53,20 +54,20 @@ public class HomeController {
     @Operation(summary = "가장 인기 있는 지역", description = "")
     public ResponseEntity<?> getPopularLocations() {
         Object result = subscriptionService.getPopularLocationList();
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok( new ApiResponse<>("sucess",result));
     }
 
     @GetMapping("/my-locations")
     @Operation(summary = "내 관심 지역")
     public ResponseEntity<?> getMyLocations(HttpServletRequest request) {
         List<String> interestLocals = subscriptionService.getInterestLocalsByEmail(request);
-        return ResponseEntity.ok(interestLocals);
+        return ResponseEntity.ok(new ApiResponse<>("sucess",interestLocals));
     }
 
     @GetMapping("/popular-content")
     @Operation(summary = "인기있는 게시글")
-    public ResponseEntity<List<Post>> getPopularPosts() {
+    public ResponseEntity<?> getPopularPosts() {
         List<Post> posts = communityService.getPopularPosts();
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(new ApiResponse<>("sucess",posts));
     }
 }

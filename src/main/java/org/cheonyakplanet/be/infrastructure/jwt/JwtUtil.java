@@ -8,9 +8,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.cheonyakplanet.be.domain.entity.RefreshToken;
 import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
-import org.cheonyakplanet.be.domain.repository.RefreshTokenRepository;
+import org.cheonyakplanet.be.domain.entity.UserToken;
+import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,7 +44,7 @@ public class JwtUtil {
     private Key key;
     private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserTokenRepository userTokenRepository;
 
     @PostConstruct
     public void init() {
@@ -52,79 +52,116 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String generateRefreshToken(String email) {
-        Optional<RefreshToken> existingToken = refreshTokenRepository.findByEmail(email);
-
-        String newToken = createRefreshToken(email);
-        if (existingToken.isPresent()) {
-            existingToken.get().updateToken(newToken);
-            refreshTokenRepository.save(existingToken.get());
-        } else {
-            refreshTokenRepository.save(new RefreshToken(email, newToken));
-        }
-        return newToken;
-    }
-
     /**
-     * JWT 생성
-     *
-     * @param email
-     * @param role
-     * @return
+     * Access Token 생성
      */
-    public String createToken(String email, UserRoleEnum role) {
-        Date date = new Date();
-
+    public String createAccessToken(String email, UserRoleEnum role) {
+        Date now = new Date();
         return BEARER_PREFIX + Jwts.builder()
-                .setSubject(email) // ID
-                .claim(AUTHORIZATION_KEY, role)
-                .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                .setIssuedAt(date)
+                .setSubject(email)
+                .claim("role", role)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
                 .compact();
     }
 
+    /**
+     * Refresh Token 생성
+     */
     public String createRefreshToken(String email) {
         Date now = new Date();
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(email)
-                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
                 .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
                 .compact();
     }
 
-    public void invalidateRefreshToken(String token) {
-        Claims claims = getUserInfoFromToken(token);
-        String email = claims.getSubject();
+    /**
+     * Access Token과 Refresh Token 저장 (MySQL)
+     */
+    public void storeTokens(String email, String accessToken, String refreshToken) {
+        Date accessExpiry = new Date(System.currentTimeMillis() + TOKEN_TIME);
+        Date refreshExpiry = new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME);
 
-        Optional<RefreshToken> refreshToken = refreshTokenRepository.findByEmail(email);
-        if (refreshToken.isPresent()) {
-            refreshTokenRepository.delete(refreshToken.get());
-            log.info("Refresh Token for {} 무효화 완료", email);
+        Optional<UserToken> existingToken = userTokenRepository.findByEmail(email);
+
+        if (existingToken.isPresent()) {
+            existingToken.get().updateTokens(accessToken, refreshToken, accessExpiry, refreshExpiry);
+            userTokenRepository.save(existingToken.get());
         } else {
-            log.warn("Refresh Token for {} 가 존재하지 않습니다.", email);
+            UserToken userToken = new UserToken(email, accessToken, refreshToken, accessExpiry, refreshExpiry);
+            userTokenRepository.save(userToken);
         }
     }
 
     /**
-     * 생성된 JWT를 쿠키에 저장
-     *
-     * @param token
-     * @param response
+     * Access Token 가져오기 (MySQL)
      */
-    public void addJwtToCookie(String token, HttpServletResponse response) {
-        try {
-            token = URLEncoder.encode(token, "UTF-8").replaceAll("\\+", "%20"); // 공백 제거를 위한 인코딩
+    public String getAccessToken(String email) {
+        return userTokenRepository.findByEmail(email).map(UserToken::getAccessToken).orElse(null);
+    }
 
-            Cookie cookie = new Cookie(AUTHORIZATION_KEY, token);
-            cookie.setPath("/");
+    /**
+     * Refresh Token 가져오기 (MySQL)
+     */
+    public String getRefreshToken(String email) {
+        return userTokenRepository.findByEmail(email).map(UserToken::getRefreshToken).orElse(null);
+    }
 
-            response.addCookie(cookie);
+    /**
+     * Refresh Token을 사용하여 새로운 Access Token 발급
+     */
+    public String refreshAccessToken(String refreshToken) {
+        Optional<UserToken> userToken = userTokenRepository.findByRefreshToken(refreshToken);
 
-        } catch (UnsupportedEncodingException e) {
-            log.error(e.getMessage());
+        if (userToken.isEmpty()) {
+            throw new CustomException(ErrorCode.AUTH005, "Refresh Token이 유효하지 않습니다.");
         }
+
+        String email = getUserInfoFromToken(refreshToken).getSubject();
+        String newAccessToken = createAccessToken(email, UserRoleEnum.USER);
+
+        // 새로운 Access Token을 MySQL에 저장
+        userToken.get().setAccessToken(newAccessToken);
+        userToken.get().setAccessTokenExpiry(new Date(System.currentTimeMillis() + TOKEN_TIME));
+        userTokenRepository.save(userToken.get());
+
+        return newAccessToken;
+    }
+
+    /**
+     * 토큰 검증
+     */
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (SecurityException | MalformedJwtException | SignatureException e) {
+            throw new CustomException(ErrorCode.AUTH001, "Invalid JWT signature");
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(ErrorCode.AUTH002, "Expired JWT token");
+        } catch (UnsupportedJwtException e) {
+            throw new CustomException(ErrorCode.AUTH003, "Unsupported JWT token");
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.AUTH004, "JWT claims is empty");
+        }
+    }
+
+    /**
+     * 토큰에서 사용자 정보 가져오기
+     */
+    public Claims getUserInfoFromToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    }
+
+    /**
+     * 로그아웃 시 토큰 삭제
+     */
+    public void deleteTokens(String email) {
+        userTokenRepository.deleteByEmail(email);
     }
 
     /**
@@ -140,36 +177,6 @@ public class JwtUtil {
         throw new CustomException(ErrorCode.AUTH010, "토큰 없음");
     }
 
-    /**
-     * JWT 검증
-     *
-     * @param token
-     * @return
-     */
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException | SignatureException e) {
-            throw new CustomException(ErrorCode.AUTH001, "Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.");
-        } catch (ExpiredJwtException e) {
-            throw new CustomException(ErrorCode.AUTH002, "Expired JWT token, 만료된 JWT token 입니다.");
-        } catch (UnsupportedJwtException e) {
-            throw new CustomException(ErrorCode.AUTH003, "Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
-        } catch (IllegalArgumentException e) {
-            throw new CustomException(ErrorCode.AUTH004, "JWT claims is empty, 잘못된 JWT 토큰 입니다.");
-        }
-    }
-
-    /**
-     * 토큰에서 사용자 정보 가져오기
-     *
-     * @param token
-     * @return
-     */
-    public Claims getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
 
     /**
      * Header에사 JWT 가져오기

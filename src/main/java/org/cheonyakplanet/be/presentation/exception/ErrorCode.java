@@ -24,6 +24,12 @@ public enum ErrorCode {
     //community
     COMU001("COMU001","게시글 없음"),
 
+    // Info
+    INFO001("INFO001","해당 아이디의 청약건 없음"),
+    INFO002("INFO002","해당 지역의 청약건 없음"),
+
+    INFO005("INFO005","지역 테이블 없음, DB확인"),
+
     // Other
     OTHER001("OTHER001","필터 부분 에러"),
 
