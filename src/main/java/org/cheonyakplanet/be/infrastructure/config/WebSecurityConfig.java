@@ -78,7 +78,7 @@ public class WebSecurityConfig {
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
                 // 3) 회원가입/로그인 등 공개 API
-                .requestMatchers("/api/member/**","/api/main/**").permitAll()
+                .requestMatchers("/api/member/**","/api/main/**","api/community/posts","api/community").permitAll()
 
                 // 4) 나머지는 인증필요
                 .anyRequest().authenticated()
