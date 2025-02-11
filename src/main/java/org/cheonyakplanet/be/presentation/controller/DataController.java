@@ -18,7 +18,7 @@ public class DataController {
     private final SubscriptionService subscriptionService;
     private final FinanceService financeService;
 
-    @GetMapping("/subapt")
+    @GetMapping("/subscription/apt")
     @Operation(summary = "아파트 청약 불러오기",description = "swagger")
     public ResponseEntity<?> getSubscriptionData(){
         String result = subscriptionService.updateSubAPT();

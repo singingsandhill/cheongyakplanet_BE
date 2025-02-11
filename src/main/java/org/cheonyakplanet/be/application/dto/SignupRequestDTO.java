@@ -3,10 +3,13 @@ package org.cheonyakplanet.be.application.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Builder
+@Getter
+@Setter
 public class SignupRequestDTO {
 
     @Schema(description = "이메일, 로그인에 이용", example = "user@example.com")
@@ -24,6 +27,6 @@ public class SignupRequestDTO {
     @Schema(description = "게시판에 쓸 아이디", example = "tester")
     private String username;
 
-    @Schema(description = "관리자 계정 생성시 토큰 입력 (생략가능)",example = "")
+    @Schema(description = "관리자 계정 생성시 토큰 입력 (생략가능)", example = "")
     private String adminToken = "";
 }
