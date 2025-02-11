@@ -1,6 +1,7 @@
 package org.cheonyakplanet.be.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Comment;
@@ -21,14 +22,14 @@ public class CommunityController {
 
     @PostMapping("/posts")
     @Operation(summary = "게시글 작성")
-    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO) {
-        return ResponseEntity.ok(communityService.createPost(postDTO));
+    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, HttpServletRequest request) {
+        return ResponseEntity.ok(communityService.createPost(postDTO, request));
     }
 
     @GetMapping("/posts")
     @Operation(summary = "모든 게시글 조회 (정렬 기준: time, views, likes; 페이징 기능 포함)")
     public ResponseEntity<?> getAllPosts(
-            @RequestParam(value = "sort",defaultValue = "time") String sort,
+            @RequestParam(value = "sort", defaultValue = "time") String sort,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
@@ -43,8 +44,8 @@ public class CommunityController {
 
     @DeleteMapping("/delete/post/{id}")
     @Operation(summary = "게시글 삭제")
-    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id) {
-        communityService.deletePost(id);
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, HttpServletRequest request) {
+        communityService.deletePost(id, request);
         return ResponseEntity.noContent().build();
     }
 

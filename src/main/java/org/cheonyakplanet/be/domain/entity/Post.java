@@ -20,8 +20,6 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long uuid;
-
     private String username;
 
     private String title;
