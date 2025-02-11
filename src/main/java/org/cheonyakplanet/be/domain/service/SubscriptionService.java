@@ -179,6 +179,10 @@ public class SubscriptionService {
         // 이메일 기반 관심 지역 조회
         List<Object[]> rawInterestLocals = userRepository.myInterestLocals(email);
 
+        if(rawInterestLocals.isEmpty()) {
+            return new ArrayList<>(Integer.parseInt("로그인이 필요합니다!"));
+        }
+
         // Object[] 데이터를 List<String>으로 변환
         List<String> interestLocals = new ArrayList<>();
         for (Object[] locals : rawInterestLocals) {
