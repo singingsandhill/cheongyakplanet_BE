@@ -12,6 +12,7 @@ public enum ErrorCode {
     SIGN002("SIGN002","중복된 이메일 존재"),
     SIGN003("SIGN003","관리자 가입 토큰 불일치"),
     SIGN004("SIGN004","로그인 정보 불일치"),
+    SIGN005("SIGN005","사용자를 찾을 수 없음"),
 
     // JWT
     AUTH001("AUTH001","유효하지 않은 JWT 서명"),
@@ -23,6 +24,7 @@ public enum ErrorCode {
 
     //community
     COMU001("COMU001","게시글 없음"),
+    COMU002("COMU002","게시글에 수정 권한 없음"),
 
     // Info
     INFO001("INFO001","해당 아이디의 청약건 없음"),

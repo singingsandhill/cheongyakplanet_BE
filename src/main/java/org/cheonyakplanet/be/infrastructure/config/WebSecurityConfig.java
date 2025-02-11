@@ -1,6 +1,7 @@
 package org.cheonyakplanet.be.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.CorsFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtAuthenticationFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtAuthorizationFilter;
@@ -78,7 +79,11 @@ public class WebSecurityConfig {
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 
                 // 3) 회원가입/로그인 등 공개 API
-                .requestMatchers("/api/member/**","/api/main/**","api/community/posts","api/community").permitAll()
+                .requestMatchers("/api/member/**",
+                        "/api/main/**",
+                        "api/community/post/").permitAll()
+
+                .requestMatchers(HttpMethod.GET,"api/community/posts").permitAll()
 
                 // 4) 나머지는 인증필요
                 .anyRequest().authenticated()

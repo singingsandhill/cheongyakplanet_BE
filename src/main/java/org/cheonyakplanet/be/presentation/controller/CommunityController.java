@@ -1,6 +1,7 @@
 package org.cheonyakplanet.be.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Comment;
@@ -10,7 +11,6 @@ import org.cheonyakplanet.be.domain.service.CommunityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -22,37 +22,41 @@ public class CommunityController {
 
     @PostMapping("/posts")
     @Operation(summary = "게시글 작성")
-    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO) {
-        return ResponseEntity.ok(communityService.createPost(postDTO));
+    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, HttpServletRequest request) {
+        return ResponseEntity.ok(communityService.createPost(postDTO, request));
     }
 
     @GetMapping("/posts")
-    @Operation(summary = "모든 게시글 조회")
-    public ResponseEntity<List<Post>> getAllPosts() {
-        return ResponseEntity.ok(communityService.getAllPosts());
+    @Operation(summary = "모든 게시글 조회 (정렬 기준: time, views, likes; 페이징 기능 포함)")
+    public ResponseEntity<?> getAllPosts(
+            @RequestParam(value = "sort", defaultValue = "time") String sort,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
+    ) {
+        return ResponseEntity.ok(communityService.getAllPosts(sort, page, size));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/post/{id}")
     @Operation(summary = "게시글 한 건 조회")
     public ResponseEntity<Post> getPost(@PathVariable("id") Long id) {
         return ResponseEntity.ok(communityService.getPostById(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/post/{id}")
     @Operation(summary = "게시글 삭제")
-    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id) {
-        communityService.deletePost(id);
+    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, HttpServletRequest request) {
+        communityService.deletePost(id, request);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/like")
+    @PostMapping("/like/post/{id}")
     @Operation(summary = "게시글 좋아요")
     public ResponseEntity<Void> likePost(@PathVariable("id") Long id) {
         communityService.likePost(id);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/dislike")
+    @PostMapping("/dislike/{id}")
     @Operation(summary = "게시글 싫어요")
     public ResponseEntity<Void> dislikePost(@PathVariable("id") Long id) {
         communityService.dislikePost(id);
@@ -64,12 +68,6 @@ public class CommunityController {
     public ResponseEntity<Comment> addComment(@PathVariable("postId") Long postId, @RequestBody Map<String, String> payload) {
         String content = payload.get("content");
         return ResponseEntity.ok(communityService.addComment(postId, content));
-    }
-
-    @GetMapping("/{postId}/comments")
-    @Operation(summary = "게시글의 댓글 조회")
-    public ResponseEntity<List<Comment>> getComments(@PathVariable("postId") Long postId) {
-        return ResponseEntity.ok(communityService.getCommentsByPostId(postId));
     }
 
     @PostMapping("/{commentId}")
