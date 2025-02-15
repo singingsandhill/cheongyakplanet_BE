@@ -1,12 +1,13 @@
 package org.cheonyakplanet.be.application.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@Builder
 @Getter @Setter
+@AllArgsConstructor
 public class PostDTO {
 
     @Schema(description = "게시글 id", example = "")

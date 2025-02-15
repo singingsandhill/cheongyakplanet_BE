@@ -1,15 +1,23 @@
 package org.cheonyakplanet.be.domain.service;
 
 import lombok.RequiredArgsConstructor;
+import org.cheonyakplanet.be.application.dto.SubscriptionDTO;
+import org.cheonyakplanet.be.application.dto.SubscriptionDetailDTO;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 import org.cheonyakplanet.be.domain.repository.SggCodeRepository;
 import org.cheonyakplanet.be.domain.repository.SubscriptionInfoRepository;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,11 +29,11 @@ public class InfoService {
     /**
      * 단일 청약 정보를 조회
      */
-    public Optional<SubscriptionInfo> getSubscriptionById(Long id) {
+    public List<SubscriptionDetailDTO> getSubscriptionById(Long id) {
         Optional<SubscriptionInfo> result = subscriptionInfoRepository.findById(id);
 
         if (result.isPresent()) {
-            return result;
+            return result.stream().map(SubscriptionDetailDTO::fromEntity).collect(Collectors.toList());
         } else {
             throw new CustomException(ErrorCode.INFO001, "해당 아이디의 청약건 없음");
         }
@@ -62,4 +70,19 @@ public class InfoService {
         return result;
     }
 
+    /**
+     * 청약 리스트
+     * 마김일 순으로 정렬, 간단 정보만 제공
+     * @param page
+     * @param size
+     * @return
+     */
+    public Object getSubscriptions(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("rceptEndde").descending());
+
+        Page<SubscriptionInfo> result = subscriptionInfoRepository.findAll(pageable);
+        List<SubscriptionDTO> subscriptionDTOList = result.stream()
+                .map(SubscriptionDTO::fromEntity).collect(Collectors.toList());
+        return subscriptionDTOList;
+    }
 }

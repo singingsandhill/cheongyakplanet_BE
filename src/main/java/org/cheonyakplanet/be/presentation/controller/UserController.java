@@ -56,7 +56,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "이메일 입력")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO requestDto) {
-        ApiResponse response = userService.login(requestDto);
+        ApiResponse response = userService. login(requestDto);
         return ResponseEntity.ok().body(response);
     }
 

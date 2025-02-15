@@ -1,5 +1,7 @@
 package org.cheonyakplanet.be.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,9 +24,11 @@ public class Comment {
     private String content;
 
     @ManyToOne
+    @JsonBackReference
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replies = new ArrayList<>();
 }
