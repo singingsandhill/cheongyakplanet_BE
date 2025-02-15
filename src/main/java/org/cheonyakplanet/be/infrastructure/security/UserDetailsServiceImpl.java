@@ -13,15 +13,20 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UserDetailsServiceImpl  implements UserDetailsService {
 
-    private final UserRepository userRepositpry;
+    private final UserRepository userRepository;
+
+    public UserDetailsServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+
+    }
+
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.info("loadUserByUsername called with email: {}", email);
-        User user = userRepositpry.findByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.SIGN001,"일치하는 이메일 없음"));
         log.info("User found: {}", user);
         return new UserDetailsImpl(user);

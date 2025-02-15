@@ -9,7 +9,10 @@ import org.cheonyakplanet.be.application.dto.SubscriptionDetailDTO;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 import org.cheonyakplanet.be.domain.service.InfoService;
 import org.cheonyakplanet.be.domain.service.SubscriptionService;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -102,8 +105,9 @@ public class InfoController {
         return ResponseEntity.ok(new ApiResponse( "success",result));
     }
 
-    @GetMapping("/subscription/")
-    public ResponseEntity<?> getMySubscriptions() {
-        return ResponseEntity.ok(new ApiResponse<>("",""));
+    @GetMapping("/subscription/mysubscriptions")
+    @Operation(summary = "나의 관심지역 청약 리스트",description = "관심지역이 제대로 등록되어 있어야 함")
+    public ResponseEntity<?> getMySubscriptions(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(new ApiResponse<>("success",infoService.getMySubscriptions(userDetails)));
     }
 }
