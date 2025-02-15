@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @NoArgsConstructor
@@ -78,6 +80,11 @@ public class SubscriptionDetailDTO {
     private String district;                      // 예: 온양읍
     private String detail;                        // 상세주소
 
+    // 추가된 관계 세부정보
+    private List<SubscriptionPriceInfoDTO> priceInfo;
+    private List<SubscriptionSpecialSupplyTargetDTO> specialSupplyTarget;
+    private List<SubscriptionSupplyTargetDTO> supplyTarget;
+
     public static SubscriptionDetailDTO fromEntity(SubscriptionInfo entity) {
         return SubscriptionDetailDTO.builder()
                 .id(entity.getId())
@@ -133,6 +140,18 @@ public class SubscriptionDetailDTO {
                 .city(entity.getCity())
                 .district(entity.getDistrict())
                 .detail(entity.getDetail())
+                .priceInfo(entity.getSubscriptionPriceInfo() == null ? null :
+                        entity.getSubscriptionPriceInfo().stream()
+                                .map(SubscriptionPriceInfoDTO::fromEntity)
+                                .collect(Collectors.toList()))
+                .specialSupplyTarget(entity.getSubscriptionSpecialSupplyTarget() == null ? null :
+                        entity.getSubscriptionSpecialSupplyTarget().stream()
+                                .map(SubscriptionSpecialSupplyTargetDTO::fromEntity)
+                                .collect(Collectors.toList()))
+                .supplyTarget(entity.getSubscriptionSupplyTarget() == null ? null :
+                        entity.getSubscriptionSupplyTarget().stream()
+                                .map(SubscriptionSupplyTargetDTO::fromEntity)
+                                .collect(Collectors.toList()))
                 .build();
     }
 }

@@ -21,7 +21,6 @@ import java.util.Optional;
 public class InfoController {
 
     private final InfoService infoService;
-    private final SubscriptionService subscriptionService;
 
     @GetMapping("/subscription")
     @Operation(summary = "모든 청약 불러오기",description = "간단한 정보만 제공, 마감일 순으로 정렬")
@@ -101,5 +100,10 @@ public class InfoController {
     public ResponseEntity<?> getCityList(@RequestParam("region") String region) {
         List<?> result = infoService.getCityList(region);
         return ResponseEntity.ok(new ApiResponse( "success",result));
+    }
+
+    @GetMapping("/subscription/")
+    public ResponseEntity<?> getMySubscriptions() {
+        return ResponseEntity.ok(new ApiResponse<>("",""));
     }
 }
