@@ -1,16 +1,12 @@
 package org.cheonyakplanet.be.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(catalog = "planet",name = "user_info")
+@NoArgsConstructor
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

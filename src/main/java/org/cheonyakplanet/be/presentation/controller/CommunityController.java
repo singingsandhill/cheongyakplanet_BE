@@ -3,12 +3,16 @@ package org.cheonyakplanet.be.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.cheonyakplanet.be.application.dto.ApiResponse;
+import org.cheonyakplanet.be.application.dto.CommentDTO;
 import org.cheonyakplanet.be.application.dto.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Comment;
 import org.cheonyakplanet.be.domain.entity.Post;
 import org.cheonyakplanet.be.domain.entity.Reply;
 import org.cheonyakplanet.be.domain.service.CommunityService;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -22,8 +26,8 @@ public class CommunityController {
 
     @PostMapping("/posts")
     @Operation(summary = "게시글 작성")
-    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, HttpServletRequest request) {
-        return ResponseEntity.ok(communityService.createPost(postDTO, request));
+    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(communityService.createPost(postDTO, userDetails));
     }
 
     @GetMapping("/posts")
@@ -38,42 +42,41 @@ public class CommunityController {
 
     @GetMapping("/post/{id}")
     @Operation(summary = "게시글 한 건 조회")
-    public ResponseEntity<Post> getPost(@PathVariable("id") Long id) {
+    public ResponseEntity<?> getPost(@PathVariable("id") Long id) {
         return ResponseEntity.ok(communityService.getPostById(id));
     }
 
-    @DeleteMapping("/delete/post/{id}")
+    @DeleteMapping("/post/{id}")
     @Operation(summary = "게시글 삭제")
-    public ResponseEntity<Void> deletePost(@PathVariable("id") Long id, HttpServletRequest request) {
-        communityService.deletePost(id, request);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> deletePost(@PathVariable("id") Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        communityService.deletePost(id, userDetails);
+        return ResponseEntity.ok(new ApiResponse<>("success","게시글 삭제 완료"));
     }
 
-    @PostMapping("/like/post/{id}")
+    @PostMapping("/post/like/{id}")
     @Operation(summary = "게시글 좋아요")
-    public ResponseEntity<Void> likePost(@PathVariable("id") Long id) {
+    public ResponseEntity<?> likePost(@PathVariable("id") Long id) {
         communityService.likePost(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse<>("success","좋아요 +1"));
     }
 
-    @PostMapping("/dislike/{id}")
+    @PostMapping("/post/dislike/{id}")
     @Operation(summary = "게시글 싫어요")
-    public ResponseEntity<Void> dislikePost(@PathVariable("id") Long id) {
+    public ResponseEntity<?> dislikePost(@PathVariable("id") Long id) {
         communityService.dislikePost(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(new ApiResponse<>("success","싫어요 +1"));
     }
 
-    @PostMapping("/{postId}")
+    @PostMapping("/comment/{postId}")
     @Operation(summary = "게시글에 댓글 작성")
-    public ResponseEntity<Comment> addComment(@PathVariable("postId") Long postId, @RequestBody Map<String, String> payload) {
-        String content = payload.get("content");
-        return ResponseEntity.ok(communityService.addComment(postId, content));
+    public ResponseEntity<?> addComment(@PathVariable("postId") Long postId, @RequestBody CommentDTO commentDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        communityService.addComment(postId, commentDTO,userDetails);
+        return ResponseEntity.ok(new ApiResponse<>("success",commentDTO));
     }
 
-    @PostMapping("/{commentId}")
+    @PostMapping("/comment/comment/{commentId}")
     @Operation(summary = "게시글의 댓글에 답글 작성")
-    public ResponseEntity<Reply> addReply(@PathVariable("commentId") Long commentId, @RequestBody Map<String, String> payload) {
-        String content = payload.get("content");
-        return ResponseEntity.ok(communityService.addReply(commentId, content));
+    public ResponseEntity<?> addReply(@PathVariable("commentId") Long commentId, @RequestBody CommentDTO commentDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(new ApiResponse<>("success",communityService.addReply(commentId, commentDTO,userDetails)));
     }
 }

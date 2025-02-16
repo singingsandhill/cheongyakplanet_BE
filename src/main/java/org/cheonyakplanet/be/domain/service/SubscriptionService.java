@@ -160,7 +160,7 @@ public class SubscriptionService {
     }
 
     public ApiResponse<?> getPopularLocationList() {
-        List<String> popularLoacal = userRepository.findInterestLocal1TopByInterestLocal1(PageRequest.of(0, 1));
+        List<String> popularLoacal = userRepository.findInterestLocal1TopByInterestLocal1(PageRequest.of(0, 5));
         ApiResponse<?> response = new ApiResponse<>("success", popularLoacal);
         return response;
     }

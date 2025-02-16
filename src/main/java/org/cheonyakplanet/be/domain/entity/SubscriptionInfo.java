@@ -1,12 +1,10 @@
 package org.cheonyakplanet.be.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(catalog = "planet",name = "subscription_info")
@@ -167,4 +165,13 @@ public class SubscriptionInfo {
     private String city;
     private String district;
     private String detail;
+
+    @OneToMany(mappedBy = "subscriptionInfo", fetch = FetchType.LAZY)
+    private List<SubscriptionPriceInfo> subscriptionPriceInfo;
+
+    @OneToMany(mappedBy = "subscriptionInfo", fetch = FetchType.LAZY)
+    private List<SubscriptionSpecialSupplyTarget> subscriptionSpecialSupplyTarget;
+
+    @OneToMany(mappedBy = "subscriptionInfo", fetch = FetchType.LAZY)
+    private List<SubscriptionSupplyTarget> subscriptionSupplyTarget;
 }

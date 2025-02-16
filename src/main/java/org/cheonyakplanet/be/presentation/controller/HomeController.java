@@ -61,7 +61,7 @@ public class HomeController {
     @Operation(summary = "내 관심 지역")
     public ResponseEntity<?> getMyLocations(HttpServletRequest request) {
         List<String> interestLocals = subscriptionService.getInterestLocalsByEmail(request);
-        return ResponseEntity.ok(new ApiResponse<>("sucess",interestLocals));
+        return ResponseEntity.ok(new ApiResponse<>("sucess","로그인 후 확인하세요"));
     }
 
     @GetMapping("/popular-content")

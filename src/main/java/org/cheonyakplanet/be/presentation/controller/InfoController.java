@@ -1,13 +1,18 @@
 package org.cheonyakplanet.be.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.application.dto.RegionDTO;
+import org.cheonyakplanet.be.application.dto.SubscriptionDetailDTO;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
 import org.cheonyakplanet.be.domain.service.InfoService;
 import org.cheonyakplanet.be.domain.service.SubscriptionService;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +24,12 @@ import java.util.Optional;
 public class InfoController {
 
     private final InfoService infoService;
-    private final SubscriptionService subscriptionService;
+
+    @GetMapping("/subscription")
+    @Operation(summary = "모든 청약 불러오기",description = "간단한 정보만 제공, 마감일 순으로 정렬")
+    public ResponseEntity<?> getSubscriptions(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+        return ResponseEntity.ok(new ApiResponse<>("success",infoService.getSubscriptions(page, size)));
+    }
 
     /**
      * 1건의 청약 정보를 불러오기
@@ -28,18 +38,7 @@ public class InfoController {
     @GetMapping("/subscription/{id}")
     @Operation(summary = "id로 1건의 청약 물건 조회",description = "요소 클릭시 사용")
     public ResponseEntity<?> getSubscription(@PathVariable("id") Long id) {
-        Optional<SubscriptionInfo> subscriptionInfo = infoService.getSubscriptionById(id);
-        return ResponseEntity.ok(new ApiResponse( "success",subscriptionInfo));
-    }
-
-    /**
-     * 청약 물건의 상세 정보를 불러오기
-     * @return
-     */
-    @GetMapping("/subscription/{id}/detail")
-    @Operation(summary = "청약 물건 상세 정보 조회",description = "미완성")
-    public ResponseEntity<?> getSubscriptionDetail(@PathVariable("id") Long id) {
-        Optional<SubscriptionInfo> subscriptionInfo = infoService.getSubscriptionById(id);
+        List<SubscriptionDetailDTO> subscriptionInfo = infoService.getSubscriptionById(id);
         return ResponseEntity.ok(new ApiResponse( "success",subscriptionInfo));
     }
 
@@ -52,7 +51,9 @@ public class InfoController {
     @GetMapping("/subscription/list")
     @Operation(summary = "지역으로 청약 검색",description = "시, 도 list에서 선택")
     public ResponseEntity<?> getSubscriptionsByRegion(
+            @Parameter(description = "지역", example = "서울특별시")
             @RequestParam("region") String region,
+            @Parameter(description = "구", example = "서초구")
             @RequestParam("city") String city) {
         Object subscriptions = infoService.getSubscriptionsByRegion(region, city);
 
@@ -91,5 +92,11 @@ public class InfoController {
     public ResponseEntity<?> getCityList(@RequestParam("region") String region) {
         List<?> result = infoService.getCityList(region);
         return ResponseEntity.ok(new ApiResponse( "success",result));
+    }
+
+    @GetMapping("/subscription/mysubscriptions")
+    @Operation(summary = "나의 관심지역 청약 리스트",description = "관심지역이 제대로 등록되어 있어야 함")
+    public ResponseEntity<?> getMySubscriptions(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(new ApiResponse<>("success",infoService.getMySubscriptions(userDetails)));
     }
 }

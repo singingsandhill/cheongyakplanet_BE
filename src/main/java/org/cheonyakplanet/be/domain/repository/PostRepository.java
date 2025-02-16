@@ -14,6 +14,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     void deletePostById(Long id);
 
+    Post findPostById(Long id);
+
     @Query("select p from Post p order by p.likes desc ")
     List<Post> findPostsOrderByLikes(Pageable pageable);
 

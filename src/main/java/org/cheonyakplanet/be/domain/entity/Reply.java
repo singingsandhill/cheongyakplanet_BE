@@ -1,5 +1,6 @@
 package org.cheonyakplanet.be.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,6 +19,7 @@ public class Reply {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "comment_id")
     private Comment comment;
