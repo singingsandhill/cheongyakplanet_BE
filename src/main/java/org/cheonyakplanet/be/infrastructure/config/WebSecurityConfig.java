@@ -81,7 +81,8 @@ public class WebSecurityConfig {
                 // 3) 회원가입/로그인 등 공개 API
                 .requestMatchers("/api/member/**",
                         "/api/main/**",
-                        "api/community/post/").permitAll()
+                        "/api/community/post/",
+                        "/api/info/subscription/**","api/subscription/detail/view").permitAll()
 
                 .requestMatchers(HttpMethod.GET,"api/community/posts").permitAll()
 

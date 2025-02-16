@@ -14,6 +14,7 @@
     import org.cheonyakplanet.be.domain.repository.ReplyRepository;
     import org.cheonyakplanet.be.domain.repository.UserRepository;
     import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
+    import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
     import org.cheonyakplanet.be.presentation.exception.CustomException;
     import org.cheonyakplanet.be.presentation.exception.ErrorCode;
     import org.springframework.data.domain.Page;
@@ -35,16 +36,9 @@
         private final JwtUtil jwtUtil;
         private final UserRepository userRepository;
     
-        public Post createPost(PostDTO postDTO, HttpServletRequest request) {
-            // JWT 토큰 추출 및 파싱
-            String token = jwtUtil.getTokenFromRequest(request);
-            Claims claims = jwtUtil.getUserInfoFromToken(token);
-            String email = claims.getSubject();
-    
-            // User 엔티티에서 username 조회 (User가 존재하지 않으면 예외 발생)
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SIGN005, "사용자를 찾을 수 없습니다."));
-    
+        public Post createPost(PostDTO postDTO, UserDetailsImpl userDetails) {
+
+            User user = userDetails.getUser();
     
             Post post = Post.builder()
                     .username(user.getUsername())
@@ -55,15 +49,8 @@
             return postRepository.save(post);
         }
     
-        public void deletePost(Long postId, HttpServletRequest request) {
-            // JWT 토큰 추출 및 파싱
-            String token = jwtUtil.getTokenFromRequest(request);
-            Claims claims = jwtUtil.getUserInfoFromToken(token);
-            String email = claims.getSubject();
-    
-            // User 엔티티에서 username 조회
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new CustomException(ErrorCode.SIGN005, "사용자를 찾을 수 없습니다."));
+        public void deletePost(Long postId, UserDetailsImpl userDetails) {
+            User user = userDetails.getUser();
     
             // 삭제할 게시글 조회 (존재하지 않으면 예외 발생)
             Post post = postRepository.findById(postId)
@@ -141,7 +128,7 @@
             postRepository.save(post);
         }
     
-        public void addComment(Long postId, CommentDTO commentDTO, HttpServletRequest request) {
+        public void addComment(Long postId, CommentDTO commentDTO, UserDetailsImpl userDetails) {
             Post post = postRepository.findPostById(postId);
             Comment comment = Comment.builder()
                     .content(commentDTO.getContent())
@@ -161,7 +148,7 @@
                     .orElseThrow(() -> new RuntimeException("Comment not found"));
         }
     
-        public Reply addReply(Long commentId, CommentDTO commentDTO, HttpServletRequest request) {
+        public Reply addReply(Long commentId, CommentDTO commentDTO, UserDetailsImpl userDetails) {
             Comment comment = getCommentById(commentId);
             Reply reply = Reply.builder()
                     .content(commentDTO.getContent())

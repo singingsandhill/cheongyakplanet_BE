@@ -10,7 +10,9 @@ import org.cheonyakplanet.be.domain.entity.Comment;
 import org.cheonyakplanet.be.domain.entity.Post;
 import org.cheonyakplanet.be.domain.entity.Reply;
 import org.cheonyakplanet.be.domain.service.CommunityService;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -24,8 +26,8 @@ public class CommunityController {
 
     @PostMapping("/posts")
     @Operation(summary = "게시글 작성")
-    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, HttpServletRequest request) {
-        return ResponseEntity.ok(communityService.createPost(postDTO, request));
+    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(communityService.createPost(postDTO, userDetails));
     }
 
     @GetMapping("/posts")
@@ -46,8 +48,8 @@ public class CommunityController {
 
     @DeleteMapping("/post/{id}")
     @Operation(summary = "게시글 삭제")
-    public ResponseEntity<?> deletePost(@PathVariable("id") Long id, HttpServletRequest request) {
-        communityService.deletePost(id, request);
+    public ResponseEntity<?> deletePost(@PathVariable("id") Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        communityService.deletePost(id, userDetails);
         return ResponseEntity.ok(new ApiResponse<>("success","게시글 삭제 완료"));
     }
 
@@ -67,14 +69,14 @@ public class CommunityController {
 
     @PostMapping("/comment/{postId}")
     @Operation(summary = "게시글에 댓글 작성")
-    public ResponseEntity<?> addComment(@PathVariable("postId") Long postId, @RequestBody CommentDTO commentDTO, HttpServletRequest request) {
-        communityService.addComment(postId, commentDTO,request);
+    public ResponseEntity<?> addComment(@PathVariable("postId") Long postId, @RequestBody CommentDTO commentDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        communityService.addComment(postId, commentDTO,userDetails);
         return ResponseEntity.ok(new ApiResponse<>("success",commentDTO));
     }
 
     @PostMapping("/comment/comment/{commentId}")
     @Operation(summary = "게시글의 댓글에 답글 작성")
-    public ResponseEntity<?> addReply(@PathVariable("commentId") Long commentId, @RequestBody CommentDTO commentDTO, HttpServletRequest request) {
-        return ResponseEntity.ok(new ApiResponse<>("success",communityService.addReply(commentId, commentDTO,request)));
+    public ResponseEntity<?> addReply(@PathVariable("commentId") Long commentId, @RequestBody CommentDTO commentDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return ResponseEntity.ok(new ApiResponse<>("success",communityService.addReply(commentId, commentDTO,userDetails)));
     }
 }

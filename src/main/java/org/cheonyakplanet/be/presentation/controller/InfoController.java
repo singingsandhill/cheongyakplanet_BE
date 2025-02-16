@@ -43,17 +43,6 @@ public class InfoController {
     }
 
     /**
-     * 청약 물건의 상세 정보를 불러오기
-     * @return
-     */
-    @GetMapping("/subscription/{id}/detail")
-    @Operation(summary = "청약 물건 상세 정보 조회",description = "미완성")
-    public ResponseEntity<?> getSubscriptionDetail(@PathVariable("id") Long id) {
-        List<SubscriptionDetailDTO> subscriptionInfo = infoService.getSubscriptionById(id);
-        return ResponseEntity.ok(new ApiResponse( "success",subscriptionInfo));
-    }
-
-    /**
      * 특정 지역의 청약물건 검색
      * @param region
      * @param city

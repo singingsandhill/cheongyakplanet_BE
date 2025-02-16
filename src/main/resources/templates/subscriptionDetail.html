@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>청약 상세 정보</title>
+    <style>
+        /* 전체 페이지 스타일 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 컨테이너 스타일 */
+        .subscription-container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 제목 스타일 */
+        .subscription-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* 주소 스타일 */
+        .subscription-address {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        /* 버튼 스타일 */
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        /* 주요 정보 스타일 */
+        .subscription-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 280px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .info-section h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #444;
+        }
+
+        .info-section p {
+            margin: 5px 0 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #222;
+        }
+
+        /* 가격 및 입주 정보 스타일 */
+        .details table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .details th, .details td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .details th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+
+        /* 청약 일정 정보 스타일 */
+        .subscription-schedule {
+            text-align: right;
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        /* 주의사항 스타일 */
+        .notice {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="subscription-container">
+    <div id="map" style="width:500px;height:400px;"></div>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=077f932873ee88e0c9c388852da81042"></script>
+    <script>
+        var container = document.getElementById('map');
+        var options = {
+            center: new kakao.maps.LatLng(37.546912668813, 127.0411420343),
+            level: 3
+        };
+
+        var map = new kakao.maps.Map(container, options);
+    </script>
+    <h1 class="subscription-title" th:text="${subscription.houseNm}">청약 정보 불러오는 중...</h1>
+    <p class="subscription-address" th:text="${subscription.hssplyAdres}"></p>
+
+    <div class="subscription-info">
+        <div class="info-section">
+            <h3>시행사</h3>
+            <p id="developer" th:text="${subscription.bsnsMbyNm}">-</p>
+        </div>
+        <div class="info-section">
+            <h3>시공사</h3>
+            <p id="constructor" th:text="${subscription.cnstrctEntrpsNm}">-</p>
+        </div>
+        <div class="info-section">
+            <h3>청약 일정</h3>
+            <p th:text="'D-' + ${dDay}">D-?</p>
+        </div>
+    </div>
+
+    <div class="details">
+        <h2>기본 정보</h2>
+        <table>
+            <tr>
+                <th>주택 타입</th>
+                <th>분양가(만원)</th>
+                <th>입주예정</th>
+                <th>청약 방식</th>
+            </tr>
+            <tr>
+                <td id="houseType" th:text="${subscription.houseDtlSecdNm}">-</td>
+                <td id="price" th:text="${subscription.priceInfo[0].supplyPrice} + '만원'">-</td>
+                <td id="moveInDate" th:text="${subscription.mvnPrearngeYm}">-</td>
+                <td>청약통장으로 청약(청약금 없음)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="buttons">
+        <a th:href="${subscription.hmpgAdres}" target="_blank" id="homepage" class="btn">홈페이지</a>
+        <a th:href="${subscription.pblancUrl}" target="_blank" id="announcement" class="btn">공고문</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let ddayElement = document.getElementById("dday");
+        if (ddayElement) {
+            let rceptDate = ddayElement.getAttribute("data-rcept-date");
+            if (rceptDate) {
+                ddayElement.textContent = "D-" + calculateDday(rceptDate);
+            }
+        }
+    });
+
+    function calculateDday(dateString) {
+        let targetDate = new Date(dateString);
+        let today = new Date();
+        let timeDiff = targetDate.getTime() - today.getTime();
+        return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    }
+</script>
+</body>
+</html>
