@@ -1,4 +1,4 @@
-package org.cheonyakplanet.be.application.dto;
+package org.cheonyakplanet.be.application.dto.subscriprtion;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

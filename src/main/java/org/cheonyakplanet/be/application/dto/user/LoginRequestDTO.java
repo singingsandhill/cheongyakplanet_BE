@@ -1,4 +1,4 @@
-package org.cheonyakplanet.be.application.dto;
+package org.cheonyakplanet.be.application.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;

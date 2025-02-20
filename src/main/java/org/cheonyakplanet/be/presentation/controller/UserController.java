@@ -6,22 +6,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
-import org.cheonyakplanet.be.application.dto.LoginRequestDTO;
-import org.cheonyakplanet.be.application.dto.SignupRequestDTO;
-import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
-import org.cheonyakplanet.be.domain.entity.UserToken;
+import org.cheonyakplanet.be.application.dto.user.LoginRequestDTO;
+import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
-import org.cheonyakplanet.be.presentation.exception.CustomException;
-import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController

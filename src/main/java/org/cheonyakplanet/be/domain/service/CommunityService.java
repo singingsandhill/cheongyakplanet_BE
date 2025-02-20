@@ -1,10 +1,8 @@
     package org.cheonyakplanet.be.domain.service;
     
-    import io.jsonwebtoken.Claims;
-    import jakarta.servlet.http.HttpServletRequest;
     import lombok.RequiredArgsConstructor;
-    import org.cheonyakplanet.be.application.dto.CommentDTO;
-    import org.cheonyakplanet.be.application.dto.PostDTO;
+    import org.cheonyakplanet.be.application.dto.community.CommentDTO;
+    import org.cheonyakplanet.be.application.dto.community.PostDTO;
     import org.cheonyakplanet.be.domain.entity.Comment;
     import org.cheonyakplanet.be.domain.entity.Post;
     import org.cheonyakplanet.be.domain.entity.Reply;

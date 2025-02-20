@@ -1,21 +1,16 @@
 package org.cheonyakplanet.be.presentation.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
-import org.cheonyakplanet.be.application.dto.CommentDTO;
-import org.cheonyakplanet.be.application.dto.PostDTO;
-import org.cheonyakplanet.be.domain.entity.Comment;
+import org.cheonyakplanet.be.application.dto.community.CommentDTO;
+import org.cheonyakplanet.be.application.dto.community.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Post;
-import org.cheonyakplanet.be.domain.entity.Reply;
 import org.cheonyakplanet.be.domain.service.CommunityService;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
