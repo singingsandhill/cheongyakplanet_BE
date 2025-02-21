@@ -7,9 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
+import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.repository.SubscriptionInfoRepository;
 import org.cheonyakplanet.be.domain.repository.UserRepository;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
+import org.cheonyakplanet.be.presentation.exception.CustomException;
+import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -171,17 +175,14 @@ public class SubscriptionService {
      * @param
      * @return
      */
-    public List<String> getInterestLocalsByEmail(HttpServletRequest request) {
-        String token = jwtUtil.getTokenFromRequest(request);
-        String email = jwtUtil.getUserInfoFromToken(token).getSubject();
-        log.info("Extracted email: {}", email);
-
-        // 이메일 기반 관심 지역 조회
-        List<Object[]> rawInterestLocals = userRepository.myInterestLocals(email);
-
-        if(rawInterestLocals.isEmpty()) {
-            return new ArrayList<>(Integer.parseInt("로그인이 필요합니다!"));
+    public List<String> getInterestLocalsByEmail(UserDetailsImpl userDetails, HttpServletRequest request) {
+        if (userDetails == null) {
+            log.error("UserDetails is null. 로그인이 필요합니다!");
+            throw new CustomException(ErrorCode.AUTH010, "로그인이 필요합니다!");
         }
+        User user = userDetails.getUser();
+
+        List<Object[]> rawInterestLocals = userRepository.myInterestLocals(user.getEmail());
 
         // Object[] 데이터를 List<String>으로 변환
         List<String> interestLocals = new ArrayList<>();
