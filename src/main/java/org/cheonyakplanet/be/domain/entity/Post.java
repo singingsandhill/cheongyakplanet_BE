@@ -32,6 +32,7 @@ public class Post {
 
     private int likes; // 추천 수
 
+    @Builder.Default
     @JsonManagedReference
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
@@ -44,6 +45,7 @@ public class Post {
 
     private LocalDateTime deletedAt;
 
+    @Builder.Default
     private boolean isBlind = false;
 
     public void incrementLikes() {

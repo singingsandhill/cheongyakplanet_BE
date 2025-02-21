@@ -55,7 +55,7 @@ public class JwtUtil {
         Date now = new Date();
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
+                .claim(AUTHORIZATION_KEY, role)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
@@ -65,10 +65,11 @@ public class JwtUtil {
     /**
      * Refresh Token 생성
      */
-    public String createRefreshToken(String email) {
+    public String createRefreshToken(String email, UserRoleEnum role) {
         Date now = new Date();
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(email)
+                .claim(AUTHORIZATION_KEY, role)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)

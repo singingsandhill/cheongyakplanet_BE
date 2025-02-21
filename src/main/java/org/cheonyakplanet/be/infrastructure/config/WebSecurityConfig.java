@@ -1,6 +1,7 @@
 package org.cheonyakplanet.be.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
+import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.filter.CorsFilter;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtAuthenticationFilter;
@@ -34,6 +35,7 @@ public class WebSecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final UserTokenRepository userTokenRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
@@ -49,7 +51,7 @@ public class WebSecurityConfig {
 
     @Bean
     public JwtAuthorizationFilter jwtAuthorizationFilter() throws Exception {
-        return new JwtAuthorizationFilter(jwtUtil, userDetailsService);
+        return new JwtAuthorizationFilter(jwtUtil, userDetailsService, userTokenRepository);
     }
 
     @Bean

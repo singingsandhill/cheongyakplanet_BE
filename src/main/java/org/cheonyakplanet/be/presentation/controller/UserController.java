@@ -11,8 +11,10 @@ import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -58,14 +60,13 @@ public class UserController {
      * 로그아웃
      *
      * @param request
-     * @param response
+     * @param
      * @return
      */
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = jwtUtil.getTokenFromRequest(request);
-        return ResponseEntity.ok(userService.logout(token));
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        return ResponseEntity.ok(userService.logout(request));
     }
 
     @GetMapping("/kako/callback")

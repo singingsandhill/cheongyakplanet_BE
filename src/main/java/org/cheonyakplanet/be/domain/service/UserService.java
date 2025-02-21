@@ -3,6 +3,8 @@ package org.cheonyakplanet.be.domain.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.oauth2.sdk.token.Tokens;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
@@ -11,10 +13,12 @@ import org.cheonyakplanet.be.application.dto.user.LoginRequestDTO;
 import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
+import org.cheonyakplanet.be.domain.entity.UserToken;
 import org.cheonyakplanet.be.domain.repository.UserRepository;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -96,7 +101,7 @@ public class UserService {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             UserRoleEnum role = principal.getUser().getRole();
             String accessToken = jwtUtil.createAccessToken(principal.getUsername(), role);
-            String refreshToken = jwtUtil.createRefreshToken(principal.getUsername());
+            String refreshToken = jwtUtil.createRefreshToken(principal.getUsername(),principal.getUser().getRole());
             jwtUtil.storeTokens(principal.getUsername(), accessToken, refreshToken);
 
             ApiResponse apiResponse = new ApiResponse("success", Map.of(
@@ -112,14 +117,23 @@ public class UserService {
         }
     }
 
-    public ApiResponse logout(String token) {
-        if (token == null || token.isBlank()) {
-            throw new CustomException(ErrorCode.AUTH010, "토큰 없음");
+    public ApiResponse logout(HttpServletRequest request) {
+        // 요청 헤더에서 토큰 추출 (Bearer 접두어 제외)
+        String token = jwtUtil.getTokenFromRequest(request);
+        if (!StringUtils.hasText(token)) {
+            return new ApiResponse("fail", "토큰이 존재하지 않습니다.");
         }
-        String pureToken = jwtUtil.substringToken(token);
-        String email = jwtUtil.getUserInfoFromToken(pureToken).getSubject();
-        jwtUtil.deleteTokens(email);
-        return new ApiResponse("success", "로그아웃이 완료되었습니다.");
+
+        // "Bearer " 접두어를 포함하여 토큰 조회
+        Optional<UserToken> tokenEntityOpt = userTokenRepository.findByAccessToken(JwtUtil.BEARER_PREFIX + token);
+        if (tokenEntityOpt.isPresent()) {
+            UserToken userToken = tokenEntityOpt.get();
+            userToken.blacklist(); // 토큰을 블랙리스트에 등록
+            userTokenRepository.save(userToken);
+            return new ApiResponse("success", "로그아웃 성공");
+        } else {
+            return new ApiResponse("fail", "토큰 정보가 존재하지 않습니다.");
+        }
     }
 
     public String kakaoLogin(String code) throws JsonProcessingException {

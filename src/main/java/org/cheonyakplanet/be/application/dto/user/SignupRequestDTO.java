@@ -21,12 +21,14 @@ public class SignupRequestDTO {
     @NotBlank
     private String password;
 
+    @Builder.Default
     @Schema(description = "관리자 여부", example = "false")
     private boolean admin = false;
 
     @Schema(description = "게시판에 쓸 아이디", example = "tester")
     private String username;
 
+    @Builder.Default
     @Schema(description = "관리자 계정 생성시 토큰 입력 (생략가능)", example = "")
     private String adminToken = "";
 }
