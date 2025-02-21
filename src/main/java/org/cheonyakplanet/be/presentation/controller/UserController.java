@@ -11,10 +11,8 @@ import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
-import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -52,7 +50,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "이메일 입력")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO requestDto) {
-        ApiResponse response = userService. login(requestDto);
+        ApiResponse response = userService.login(requestDto);
         return ResponseEntity.ok().body(response);
     }
 
