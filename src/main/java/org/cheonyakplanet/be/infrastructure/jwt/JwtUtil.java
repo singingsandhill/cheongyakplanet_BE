@@ -13,6 +13,7 @@ import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.security.Key;
@@ -79,6 +80,7 @@ public class JwtUtil {
     /**
      * Access Token과 Refresh Token 저장 (MySQL)
      */
+    @Transactional
     public void storeTokens(String email, String accessToken, String refreshToken) {
         Date accessExpiry = new Date(System.currentTimeMillis() + TOKEN_TIME);
         Date refreshExpiry = new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME);
@@ -86,10 +88,13 @@ public class JwtUtil {
         Optional<UserToken> existingToken = userTokenRepository.findByEmail(email);
 
         if (existingToken.isPresent()) {
+            UserToken token = existingToken.get();
+            token.setBlacklisted(false);
             existingToken.get().updateTokens(accessToken, refreshToken, accessExpiry, refreshExpiry);
             userTokenRepository.save(existingToken.get());
         } else {
             UserToken userToken = new UserToken(email, accessToken, refreshToken, accessExpiry, refreshExpiry);
+            userToken.setBlacklisted(false);
             userTokenRepository.save(userToken);
         }
     }
