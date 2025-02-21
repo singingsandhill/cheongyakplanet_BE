@@ -1,4 +1,4 @@
-package org.cheonyakplanet.be.application.dto;
+package org.cheonyakplanet.be.application.dto.user;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

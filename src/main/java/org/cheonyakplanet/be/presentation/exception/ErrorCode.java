@@ -20,7 +20,9 @@ public enum ErrorCode {
     AUTH003("AUTH003","지원되지 않는 토큰"),
     AUTH004("AUTH004","claim is empty"),
     AUTH005("AUTH005","유효하지 않은 토큰"),
+    AUTH006("AUTH006","로그아웃된 토큰"),
     AUTH010("AUTH010","토큰 없음"),
+
 
     //community
     COMU001("COMU001","게시글 없음"),

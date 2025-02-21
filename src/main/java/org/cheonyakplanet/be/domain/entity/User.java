@@ -2,12 +2,13 @@ package org.cheonyakplanet.be.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.cheonyakplanet.be.domain.Stamped;
 
 @Entity
 @Getter @Setter
 @Table(catalog = "planet",name = "user_info")
 @NoArgsConstructor
-public class User {
+public class User extends Stamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long uuid;
@@ -50,6 +51,8 @@ public class User {
 
     @Column(name = "num_House")
     private Integer numHouse;
+
+    private String status;
 
     public User(String email, String password, UserRoleEnum role, String username) {
         this.email = email;

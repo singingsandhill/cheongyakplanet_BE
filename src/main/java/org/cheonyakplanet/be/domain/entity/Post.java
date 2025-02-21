@@ -3,14 +3,12 @@ package org.cheonyakplanet.be.domain.entity;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
-import org.cheonyakplanet.be.application.dto.PostDTO;
+import org.cheonyakplanet.be.application.dto.community.PostDTO;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter @Setter
@@ -34,6 +32,7 @@ public class Post {
 
     private int likes; // 추천 수
 
+    @Builder.Default
     @JsonManagedReference
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
@@ -46,6 +45,7 @@ public class Post {
 
     private LocalDateTime deletedAt;
 
+    @Builder.Default
     private boolean isBlind = false;
 
     public void incrementLikes() {

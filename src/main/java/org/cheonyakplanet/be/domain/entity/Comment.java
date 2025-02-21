@@ -28,6 +28,7 @@ public class Comment {
     @JoinColumn(name = "post_id")
     private Post post;
 
+    @Builder.Default
     @JsonManagedReference
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reply> replies = new ArrayList<>();
