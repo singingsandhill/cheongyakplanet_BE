@@ -6,22 +6,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
-import org.cheonyakplanet.be.application.dto.LoginRequestDTO;
-import org.cheonyakplanet.be.application.dto.SignupRequestDTO;
-import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
-import org.cheonyakplanet.be.domain.entity.UserToken;
+import org.cheonyakplanet.be.application.dto.user.LoginRequestDTO;
+import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
-import org.cheonyakplanet.be.presentation.exception.CustomException;
-import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -56,7 +50,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "이메일 입력")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO requestDto) {
-        ApiResponse response = userService. login(requestDto);
+        ApiResponse response = userService.login(requestDto);
         return ResponseEntity.ok().body(response);
     }
 
@@ -64,14 +58,13 @@ public class UserController {
      * 로그아웃
      *
      * @param request
-     * @param response
+     * @param
      * @return
      */
     @PostMapping("/logout")
     @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
-        String token = jwtUtil.getTokenFromRequest(request);
-        return ResponseEntity.ok(userService.logout(token));
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        return ResponseEntity.ok(userService.logout(request));
     }
 
     @GetMapping("/kako/callback")

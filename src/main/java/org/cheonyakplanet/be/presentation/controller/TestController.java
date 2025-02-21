@@ -3,7 +3,7 @@ package org.cheonyakplanet.be.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
-import org.cheonyakplanet.be.application.dto.SubscriptionDetailDTO;
+import org.cheonyakplanet.be.application.dto.subscriprtion.SubscriptionDetailDTO;
 import org.cheonyakplanet.be.domain.service.InfoService;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
