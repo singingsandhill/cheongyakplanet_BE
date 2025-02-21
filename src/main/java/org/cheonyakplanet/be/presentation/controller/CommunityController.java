@@ -29,10 +29,10 @@ public class CommunityController {
     @Operation(summary = "모든 게시글 조회 (정렬 기준: time, views, likes; 페이징 기능 포함)")
     public ResponseEntity<?> getAllPosts(
             @RequestParam(value = "sort", defaultValue = "time") String sort,
-            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(communityService.getAllPosts(sort, page, size));
+        return ResponseEntity.ok(communityService.getAllPosts(sort, page-1, size));
     }
 
     @GetMapping("/post/{id}")
