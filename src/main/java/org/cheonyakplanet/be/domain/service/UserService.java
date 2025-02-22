@@ -3,7 +3,6 @@ package org.cheonyakplanet.be.domain.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.oauth2.sdk.token.Tokens;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,6 @@ import org.cheonyakplanet.be.domain.repository.UserRepository;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
-import org.cheonyakplanet.be.infrastructure.security.UserDetailsServiceImpl;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.HttpHeaders;
@@ -55,9 +53,10 @@ public class UserService {
 
     /**
      * 회원가입
+     *
      * @param requestDTO
      */
-    public void signup(SignupRequestDTO requestDTO){
+    public void signup(SignupRequestDTO requestDTO) {
         String useremail = requestDTO.getEmail();
         String password = passwordEncoder.encode(requestDTO.getPassword());
         String username = requestDTO.getUsername();
@@ -69,24 +68,25 @@ public class UserService {
 
         //  사용자 role 확인
         UserRoleEnum role = UserRoleEnum.USER;
-        if (requestDTO.isAdmin()){
-            if(!ADMIN_TOKEN.equals(requestDTO.getAdminToken())){
-                throw new CustomException(ErrorCode.SIGN003,"관리자 가입 토큰 불일치");
+        if (requestDTO.isAdmin()) {
+            if (!ADMIN_TOKEN.equals(requestDTO.getAdminToken())) {
+                throw new CustomException(ErrorCode.SIGN003, "관리자 가입 토큰 불일치");
             }
             role = UserRoleEnum.ADMIN;
         }
 
         // 사용자 등록
-        User user = new User(useremail,password,role,username);
+        User user = new User(useremail, password, role, username);
         userRepository.save(user);
     }
 
     /**
      * 로그인
+     *
      * @param requestDTO
      * @return
      */
-    public ApiResponse login(LoginRequestDTO requestDTO){
+    public ApiResponse login(LoginRequestDTO requestDTO) {
 
         try {
             // 1) Spring Security AuthenticationManager 로 인증 시도
@@ -101,7 +101,7 @@ public class UserService {
             UserDetailsImpl principal = (UserDetailsImpl) authentication.getPrincipal();
             UserRoleEnum role = principal.getUser().getRole();
             String accessToken = jwtUtil.createAccessToken(principal.getUsername(), role);
-            String refreshToken = jwtUtil.createRefreshToken(principal.getUsername(),principal.getUser().getRole());
+            String refreshToken = jwtUtil.createRefreshToken(principal.getUsername(), principal.getUser().getRole());
             jwtUtil.storeTokens(principal.getUsername(), accessToken, refreshToken);
 
             ApiResponse apiResponse = new ApiResponse("success", Map.of(
@@ -112,8 +112,8 @@ public class UserService {
             return apiResponse;
         } catch (Exception e) {
             log.info(e.getMessage());
-            log.error("Authentication failed",e);
-            throw new CustomException(ErrorCode.SIGN004,"로그인 정보 불일치");
+            log.error("Authentication failed", e);
+            throw new CustomException(ErrorCode.SIGN004, "로그인 정보 불일치");
         }
     }
 

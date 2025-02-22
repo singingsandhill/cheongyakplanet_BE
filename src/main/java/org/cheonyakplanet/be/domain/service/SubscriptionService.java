@@ -6,13 +6,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
+import org.cheonyakplanet.be.application.dto.CoordinateResponseDTO;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
+import org.cheonyakplanet.be.domain.entity.SubscriptionLocationInfo;
 import org.cheonyakplanet.be.domain.repository.SubscriptionInfoRepository;
+import org.cheonyakplanet.be.domain.repository.SubscriptionLocationInfoRepository;
 import org.cheonyakplanet.be.domain.repository.UserRepository;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,6 +31,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
 
 @Slf4j
 @Service
@@ -33,6 +41,7 @@ import java.util.regex.Pattern;
 public class SubscriptionService {
 
     private final SubscriptionInfoRepository subscriptionInfoRepository;
+    private final SubscriptionLocationInfoRepository subscriptionLocationInfoRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
@@ -47,6 +56,12 @@ public class SubscriptionService {
 
     @Value("${sub.other.api.url}")
     private String subOtherApiUrl;
+
+    @Value("${kakao.rest.api.key}")
+    private String kakaoRestApiKey;
+
+    @Value("${kakao.latitude.url}")
+    private String kakaoLatitudeUrl;
 
     public String updateSubAPT() {
         String requestUrl = subAptApiUrl + "?page=1&perPage=50&" + "serviceKey=" + apiKey;
@@ -159,6 +174,65 @@ public class SubscriptionService {
         return null; // 주소 형식이 맞지 않으면 null 반환
     }
 
+    //    subscriptionLocationInfoRepository
+    public List<CoordinateResponseDTO> updateAllSubscriptionCoordinates() {
+        List<SubscriptionInfo> subscriptions = subscriptionInfoRepository.findAll();
+        List<CoordinateResponseDTO> coordinateResponses = new ArrayList<>();
+        List<SubscriptionLocationInfo> locationInfos = new ArrayList<>();
+
+        // WebClient는 반복문 외부에서 한 번 생성해 재사용
+        WebClient webClient = WebClient.builder()
+                .baseUrl("https://dapi.kakao.com")
+                .defaultHeader("Authorization", "KakaoAK " + kakaoRestApiKey)
+                .build();
+
+        for (SubscriptionInfo subscription : subscriptions) {
+            String addr = subscription.getHssplyAdres();
+            try {
+                Mono<String> responseMono = webClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/v2/local/search/address.json")
+                                .queryParam("query", addr)
+                                .build()
+                        )
+                        .retrieve()
+                        .bodyToMono(String.class);
+
+                String responseBody = responseMono.block();
+                if (responseBody != null) {
+                    JSONObject jsonObject = new JSONObject(responseBody);
+                    JSONArray documents = jsonObject.getJSONArray("documents");
+
+                    if (documents.length() > 0) {
+                        JSONObject firstDoc = documents.getJSONObject(0);
+                        String x = firstDoc.getString("x"); // 경도
+                        String y = firstDoc.getString("y"); // 위도
+
+                        // 새로운 SubscriptionLocationInfo 생성 (id, 위도, 경도)
+                        SubscriptionLocationInfo locationInfo = SubscriptionLocationInfo.builder()
+                                .id(subscription.getId())
+                                .latitude(y)
+                                .longitude(x)
+                                .build();
+                        locationInfos.add(locationInfo);
+
+                        coordinateResponses.add(new CoordinateResponseDTO(x, y));
+                    } else {
+                        coordinateResponses.add(new CoordinateResponseDTO("NotFound", "NotFound"));
+                    }
+                } else {
+                    coordinateResponses.add(new CoordinateResponseDTO("NoResponse", "NoResponse"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                coordinateResponses.add(new CoordinateResponseDTO("Error", "Error"));
+            }
+        }
+        subscriptionLocationInfoRepository.saveAll(locationInfos);
+
+        return coordinateResponses;
+    }
+
     public ApiResponse<?> getPopularLocationList() {
         List<String> popularLoacal = userRepository.findInterestLocal1TopByInterestLocal1(PageRequest.of(0, 5));
         ApiResponse<?> response = new ApiResponse<>("success", popularLoacal);
@@ -179,7 +253,7 @@ public class SubscriptionService {
         // 이메일 기반 관심 지역 조회
         List<Object[]> rawInterestLocals = userRepository.myInterestLocals(email);
 
-        if(rawInterestLocals.isEmpty()) {
+        if (rawInterestLocals.isEmpty()) {
             return new ArrayList<>(Integer.parseInt("로그인이 필요합니다!"));
         }
 
