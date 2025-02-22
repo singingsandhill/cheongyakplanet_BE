@@ -6,9 +6,11 @@ import org.cheonyakplanet.be.application.dto.CoordinateResponseDTO;
 import org.cheonyakplanet.be.application.dto.subscriprtion.SubscriptionDTO;
 import org.cheonyakplanet.be.application.dto.subscriprtion.SubscriptionDetailDTO;
 import org.cheonyakplanet.be.domain.entity.SubscriptionInfo;
+import org.cheonyakplanet.be.domain.entity.SubscriptionLocationInfo;
 import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.repository.SggCodeRepository;
 import org.cheonyakplanet.be.domain.repository.SubscriptionInfoRepository;
+import org.cheonyakplanet.be.domain.repository.SubscriptionLocationInfoRepository;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
@@ -36,12 +38,7 @@ public class InfoService {
 
     private final SubscriptionInfoRepository subscriptionInfoRepository;
     private final SggCodeRepository sggCodeRepository;
-
-    @Value("${kakao.rest.api.key}")
-    private String kakaoRestApiKey;
-
-    @Value("${kakao.latitude.url}")
-    private String kakaoLatitudeUrl;
+    private final SubscriptionLocationInfoRepository subscriptionLocationInfoRepository;
 
     /**
      * 단일 청약 정보를 조회
@@ -142,50 +139,17 @@ public class InfoService {
      * @return
      */
     public Object getSubscriptionAddr(Long id) {
-        Optional<SubscriptionInfo> result = subscriptionInfoRepository.findById(id);
-        String addr = result.get().getHssplyAdres();
-
-        try {
-//            // 2) 주소 인코딩
-//            String encodedAddr = URLEncoder.encode(addr, StandardCharsets.UTF_8);
-
-            // 3) WebClient 생성
-            WebClient webClient = WebClient.builder()
-                    .baseUrl("https://dapi.kakao.com")
-                    .defaultHeader("Authorization", "KakaoAK " + kakaoRestApiKey)
-                    .build();
-
-            Mono<String> responseMono = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/v2/local/search/address.json")
-                            .queryParam("query", addr)
-                            .build()
-                    )
-                    .retrieve()
-                    .bodyToMono(String.class);
-
-            // 5) 응답을 수신(block)하고 JSON 파싱
-            String responseBody = responseMono.block();
-
-            if (responseBody != null) {
-                JSONObject jsonObject = new JSONObject(responseBody);
-                JSONArray documents = jsonObject.getJSONArray("documents");
-
-                if (documents.length() > 0) {
-                    JSONObject firstDoc = documents.getJSONObject(0);
-                    String x = firstDoc.getString("x");
-                    String y = firstDoc.getString("y");
-
-                    return new CoordinateResponseDTO(x, y);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            // 에러 처리
+        Optional<SubscriptionLocationInfo> optionalSubscription = subscriptionLocationInfoRepository.findById(id);
+        if (!optionalSubscription.isPresent()) {
+            throw new RuntimeException("Subscription not found");
         }
-
-        return null;
+        SubscriptionLocationInfo subscriptionLocationInfo = optionalSubscription.get();
+        String lat = subscriptionLocationInfo.getLatitude();
+        String lon = subscriptionLocationInfo.getLongitude();
+        if (lat != null && lon != null) {
+            return new CoordinateResponseDTO(lon, lat);
+        }
+        throw new RuntimeException("Coordinates not updated yet");
     }
 
 }
