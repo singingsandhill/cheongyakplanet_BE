@@ -22,8 +22,9 @@ public class InfoController {
 
     @GetMapping("/subscription")
     @Operation(summary = "모든 청약 불러오기", description = "간단한 정보만 제공, 마감일 순으로 정렬")
-    public ResponseEntity<?> getSubscriptions(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new ApiResponse<>("success", infoService.getSubscriptions(page, size)));
+    public ResponseEntity<?> getSubscriptions(@RequestParam(name = "page", defaultValue = "1") int page,
+                                              @RequestParam(name = "size", defaultValue = "10") int size) {
+        return ResponseEntity.ok(new ApiResponse<>("success", infoService.getSubscriptions(page-1, size)));
     }
 
     /**

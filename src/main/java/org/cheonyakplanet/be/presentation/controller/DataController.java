@@ -3,12 +3,18 @@ package org.cheonyakplanet.be.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.cheonyakplanet.be.application.dto.ApiResponse;
+import org.cheonyakplanet.be.application.dto.CoordinateResponseDTO;
+import org.cheonyakplanet.be.domain.entity.SubscriptionLocationInfo;
 import org.cheonyakplanet.be.domain.service.FinanceService;
 import org.cheonyakplanet.be.domain.service.SubscriptionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -23,6 +29,13 @@ public class DataController {
     public ResponseEntity<?> getSubscriptionData(){
         String result = subscriptionService.updateSubAPT();
         return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/updateAllCoordinates")
+    @Operation(summary = "모든 SubscriptionInfo 행의 위도/경도 업데이트",description = "SubscriptionLocationInfo에 저장")
+    public ResponseEntity<?> updateAllCoordinates() {
+        List<CoordinateResponseDTO> coordinateResponses = subscriptionService.updateAllSubscriptionCoordinates();
+        return ResponseEntity.ok(new ApiResponse<>("success", coordinateResponses));
     }
 
     @GetMapping("/mortgage")

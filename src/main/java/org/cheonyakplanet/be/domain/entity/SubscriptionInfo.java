@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Getter @Setter
 public class SubscriptionInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
