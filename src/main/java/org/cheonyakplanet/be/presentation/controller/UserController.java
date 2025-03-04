@@ -3,16 +3,23 @@ package org.cheonyakplanet.be.presentation.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.application.dto.user.LoginRequestDTO;
 import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
+import org.cheonyakplanet.be.application.dto.user.UserDTO;
+import org.cheonyakplanet.be.application.dto.user.UserUpdateRequestDTO;
 import org.cheonyakplanet.be.domain.repository.UserTokenRepository;
 import org.cheonyakplanet.be.domain.service.UserService;
 import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
+import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
+import org.cheonyakplanet.be.presentation.exception.CustomException;
+import org.cheonyakplanet.be.presentation.exception.ErrorCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -86,4 +93,77 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/mypage")
+    @Operation(summary = "마이페이지 조회", description = "사용자의 전체 정보를 반환")
+    public ResponseEntity<?> getMyPage(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        UserDTO userDTO = userService.getMyPage(userDetails.getUsername());
+        return ResponseEntity.ok(new ApiResponse("success", userDTO));
+    }
+
+    @PatchMapping("/mypage")
+    @Operation(summary = "마이페이지 수정", description = "사용자 정보를 업데이트")
+    public ResponseEntity<?> updateUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestBody UserUpdateRequestDTO updateRequestDTO) {
+
+        UserDTO updatedUser = userService.updateUserInfo(userDetails, updateRequestDTO);
+        return ResponseEntity.ok(new ApiResponse("success", updatedUser));
+    }
+
+    @DeleteMapping("/mypage")
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴 후 데이터를 비활성화 처리")
+    public ResponseEntity<?> withdrawUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+
+        userService.withdrawUser(userDetails.getUsername());
+        return ResponseEntity.ok(new ApiResponse("success", "회원 탈퇴 완료"));
+    }
+
+    @PostMapping("/find-id")
+    @Operation(summary = "아이디 찾기", description = "이메일을 입력하면 가입된 계정 여부를 확인")
+    public ResponseEntity<?> findUserId(@RequestParam String email) {
+
+        ApiResponse response = userService.findUserId(email);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/find-password")
+    @Operation(summary = "비밀번호 찾기", description = "이메일과 이름을 입력하면 인증 코드가 전송됨")
+    public ResponseEntity<?> findUserPassword(@RequestParam String email, @RequestParam String username) {
+
+        ApiResponse response = userService.findUserPassword(email, username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "비밀번호 재설정", description = "인증 코드 검증 후 비밀번호 변경 및 자동 로그인")
+    public ResponseEntity<?> resetPassword(
+        @RequestParam String email,
+        @RequestParam String username,
+        @RequestParam String inputCode,
+        @RequestParam String verificationCode,
+        @RequestParam String newPassword,
+        @RequestParam String confirmPassword) {
+
+        ApiResponse response = userService.verifyCodeAndResetPassword(
+            email, username, inputCode, verificationCode, newPassword, confirmPassword);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/location")
+    @Operation(summary = "관심 지역 추가", description = "사용자의 관심 지역을 추가")
+    public ResponseEntity<?> addInterestLocation(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam List<String> location) {
+
+        ApiResponse response = userService.addInterestLocations(userDetails.getUsername(), location);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/location")
+    @Operation(summary = "관심 지역 삭제", description = "사용자의 여러 관심 지역을 한 번에 삭제")
+    public ResponseEntity<?> deleteInterestLocation(@AuthenticationPrincipal UserDetailsImpl userDetails,
+        @RequestParam List<String> locations) {
+
+        ApiResponse response = userService.deleteInterestLocations(userDetails.getUsername(), locations);
+        return ResponseEntity.ok(response);
+    }
 }
