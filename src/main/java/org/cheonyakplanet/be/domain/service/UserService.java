@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -411,10 +412,13 @@ public class UserService {
 
     private void setInterestLocations(User user, List<String> locations) {
 
-        user.setInterestLocal1(locations.size() > 0 ? locations.get(0) : null);
-        user.setInterestLocal2(locations.size() > 1 ? locations.get(1) : null);
-        user.setInterestLocal3(locations.size() > 2 ? locations.get(2) : null);
-        user.setInterestLocal4(locations.size() > 3 ? locations.get(3) : null);
-        user.setInterestLocal5(locations.size() > 4 ? locations.get(4) : null);
+        List<Consumer<String>> setters = List.of(
+            user::setInterestLocal1, user::setInterestLocal2, user::setInterestLocal3,
+            user::setInterestLocal4, user::setInterestLocal5
+        );
+
+        for (int i = 0; i < setters.size(); i++) {
+            setters.get(i).accept(i < locations.size() ? locations.get(i) : null);
+        }
     }
 }
