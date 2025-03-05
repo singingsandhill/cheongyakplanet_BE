@@ -60,8 +60,6 @@ public class User extends Stamped {
     @Enumerated(EnumType.STRING)
     private UserStatusEnum status = UserStatusEnum.ACTIVE;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
 
     public User(String email, String password, UserRoleEnum role, String username) {
 
@@ -100,9 +98,10 @@ public class User extends Stamped {
         this.password = newPassword;
     }
 
-    public void withdraw() {
+    public void withdraw(String deletedBy) {
 
         this.status = UserStatusEnum.WITHDRAWN;
-        this.deletedAt = LocalDateTime.now();
+        setDeletedBy(deletedBy);
     }
+
 }

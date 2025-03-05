@@ -280,7 +280,8 @@ public class UserService {
             throw new CustomException(ErrorCode.USER003, "이미 탈퇴한 사용자입니다.");
         }
 
-        user.withdraw();
+        user.withdraw(user.getEmail());
+
         userRepository.save(user);
 
         userTokenRepository.deleteByEmail(user.getEmail());
