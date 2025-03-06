@@ -38,14 +38,24 @@ public class InfoService {
     /**
      * 단일 청약 정보를 조회
      */
-    public List<SubscriptionDetailDTO> getSubscriptionById(Long id) {
-        Optional<SubscriptionInfo> result = subscriptionInfoRepository.findById(id);
+    public Object getSubscriptionById(Long id) {
+        // 청약 정보 조회
+        Optional<SubscriptionInfo> subscriptionInfoOpt = subscriptionInfoRepository.findById(id);
 
-        if (result.isPresent()) {
-            return result.stream().map(SubscriptionDetailDTO::fromEntity).collect(Collectors.toList());
-        } else {
+        if (subscriptionInfoOpt.isEmpty()) {
             throw new CustomException(ErrorCode.INFO001, "해당 아이디의 청약건 없음");
         }
+
+        SubscriptionInfo subscriptionInfo = subscriptionInfoOpt.get();
+
+        // 위치 정보 조회
+        Optional<SubscriptionLocationInfo> locationInfoOpt = subscriptionLocationInfoRepository.findById(id);
+        SubscriptionLocationInfo locationInfo = locationInfoOpt.orElse(null);
+
+        // DTO 변환 (위치 정보 포함)
+        SubscriptionDetailDTO detailDTO = SubscriptionDetailDTO.fromEntity(subscriptionInfo, locationInfo);
+
+        return detailDTO;
     }
 
     /**
