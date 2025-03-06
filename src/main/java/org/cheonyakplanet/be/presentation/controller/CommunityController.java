@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.application.dto.community.CommentDTO;
+import org.cheonyakplanet.be.application.dto.community.PostCreateDTO;
 import org.cheonyakplanet.be.application.dto.community.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Post;
 import org.cheonyakplanet.be.domain.service.CommunityService;
@@ -22,8 +23,8 @@ public class CommunityController {
 
     @PostMapping("/posts")
     @Operation(summary = "게시글 작성")
-    public ResponseEntity<?> createPost(@RequestBody PostDTO postDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        communityService.createPost(postDTO, userDetails);
+    public ResponseEntity<?> createPost(@RequestBody PostCreateDTO postCreateDTO, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        communityService.createPost(postCreateDTO, userDetails);
         return ResponseEntity.ok(new ApiResponse<>("success", "게시글 작성 완료"));
     }
 

@@ -2,6 +2,7 @@ package org.cheonyakplanet.be.domain.service;
 
 import lombok.RequiredArgsConstructor;
 import org.cheonyakplanet.be.application.dto.community.CommentDTO;
+import org.cheonyakplanet.be.application.dto.community.PostCreateDTO;
 import org.cheonyakplanet.be.application.dto.community.PostDTO;
 import org.cheonyakplanet.be.domain.entity.Comment;
 import org.cheonyakplanet.be.domain.entity.Post;
@@ -10,8 +11,6 @@ import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.repository.CommentRepository;
 import org.cheonyakplanet.be.domain.repository.PostRepository;
 import org.cheonyakplanet.be.domain.repository.ReplyRepository;
-import org.cheonyakplanet.be.domain.repository.UserRepository;
-import org.cheonyakplanet.be.infrastructure.jwt.JwtUtil;
 import org.cheonyakplanet.be.infrastructure.security.UserDetailsImpl;
 import org.cheonyakplanet.be.presentation.exception.CustomException;
 import org.cheonyakplanet.be.presentation.exception.ErrorCode;
@@ -31,17 +30,15 @@ public class CommunityService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final ReplyRepository replyRepository;
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
 
-    public Post createPost(PostDTO postDTO, UserDetailsImpl userDetails) {
+    public Post createPost(PostCreateDTO postCreateDTO, UserDetailsImpl userDetails) {
 
         User user = userDetails.getUser();
 
         Post post = Post.builder()
                 .username(user.getUsername())
-                .title(postDTO.getTitle())
-                .content(postDTO.getContent())
+                .title(postCreateDTO.getTitle())
+                .content(postCreateDTO.getContent())
                 .likes(0)
                 .build();
         return postRepository.save(post);
