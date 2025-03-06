@@ -4,12 +4,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.cheonyakplanet.be.application.dto.ApiResponse;
 import org.cheonyakplanet.be.application.dto.user.KakaoUserInfoDto;
 import org.cheonyakplanet.be.application.dto.user.LoginRequestDTO;
 import org.cheonyakplanet.be.application.dto.user.SignupRequestDTO;
+import org.cheonyakplanet.be.application.dto.user.UserDTO;
+import org.cheonyakplanet.be.application.dto.user.UserUpdateRequestDTO;
 import org.cheonyakplanet.be.domain.entity.User;
 import org.cheonyakplanet.be.domain.entity.UserRoleEnum;
 import org.cheonyakplanet.be.domain.entity.UserToken;
@@ -27,6 +36,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
@@ -48,6 +58,7 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final RestTemplate restTemplate;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     private final String ADMIN_TOKEN = "AAABnvxRVklrnYxKZ0aHgTBcXukeZygoC";
 
@@ -231,5 +242,178 @@ public class UserService {
         jwtUtil.storeTokens(email, newAccessToken, pureToken);
 
         return Map.of("accessToken", newAccessToken);
+    }
+
+    @Transactional(readOnly = true)
+    public UserDTO getMyPage(String email) {
+
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER001, "사용자를 찾을 수 없습니다."));
+
+        return new UserDTO(user);
+    }
+
+    @Transactional
+    public UserDTO updateUserInfo(UserDetailsImpl userDetails, UserUpdateRequestDTO updateRequest) {
+
+        User user = userRepository.findByEmailAndDeletedAtIsNull(userDetails.getUsername())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER001, "사용자를 찾을 수 없습니다."));
+
+        user.update(updateRequest);
+
+        userRepository.save(user);
+
+        return new UserDTO(user);
+    }
+
+    @Transactional
+    public void withdrawUser(String email) {
+
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER001, "사용자를 찾을 수 없습니다."));
+
+        if (user.getDeletedAt() != null) {
+            throw new CustomException(ErrorCode.USER003, "이미 탈퇴한 사용자입니다.");
+        }
+
+        user.withdraw(user.getEmail());
+
+        userRepository.save(user);
+
+        userTokenRepository.deleteByEmail(user.getEmail());
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse findUserId(String email) {
+
+        Optional<User> user = userRepository.findByEmailAndDeletedAtIsNull(email);
+
+        if (user.isPresent()) {
+            return new ApiResponse("success", Map.of("email", user.get().getEmail()));
+        } else {
+            return new ApiResponse("fail", "입력하신 이메일로 가입된 계정이 없습니다.");
+        }
+    }
+
+    @Transactional
+    public ApiResponse findUserPassword(String email, String username) {
+
+        Optional<User> user = userRepository.findByEmailAndUsernameAndDeletedAtIsNull(email, username);
+
+        if (user.isEmpty()) {
+            throw new CustomException(ErrorCode.USER001, "해당 이메일과 이름으로 가입된 계정이 없습니다.");
+        }
+
+        String verificationCode = generateVerificationCode();
+
+        emailService.sendVerificationCode(email, verificationCode);
+
+        return new ApiResponse("success", Map.of("verificationCode", verificationCode, "message", "인증 코드가 이메일로 전송되었습니다."));
+    }
+
+    @Transactional
+    public ApiResponse verifyCodeAndResetPassword(String email, String username, String inputCode, String verificationCode, String newPassword, String confirmPassword) {
+
+        Optional<User> user = userRepository.findByEmailAndUsernameAndDeletedAtIsNull(email, username);
+
+        if (user.isEmpty()) {
+            throw new CustomException(ErrorCode.USER001, "해당 이메일과 이름으로 가입된 계정이 없습니다.");
+        }
+
+        if (!inputCode.equals(verificationCode)) {
+            throw new CustomException(ErrorCode.AUTH005, "인증 코드가 일치하지 않습니다.");
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
+            throw new CustomException(ErrorCode.AUTH006, "비밀번호가 일치하지 않습니다.");
+        }
+
+        user.get().updatePassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user.get());
+
+        String accessToken = jwtUtil.createAccessToken(user.get().getEmail(), user.get().getRole());
+        String refreshToken = jwtUtil.createRefreshToken(user.get().getEmail(), user.get().getRole());
+
+        jwtUtil.storeTokens(user.get().getEmail(), accessToken, refreshToken);
+
+        return new ApiResponse("success", Map.of(
+            "message", "비밀번호가 성공적으로 변경되었습니다.",
+            "accessToken", accessToken,
+            "refreshToken", refreshToken
+        ));
+    }
+
+    private String generateVerificationCode() {
+
+        Random random = new Random();
+        int code = 100000 + random.nextInt(900000);
+        return String.valueOf(code);
+    }
+
+    @Transactional
+    public ApiResponse addInterestLocations(String email, List<String> locations) {
+
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER001, "해당 사용자를 찾을 수 없습니다."));
+
+        List<String> interestLocations = getInterestLocations(user);
+
+        for (String location : locations) {
+            if (interestLocations.contains(location)) {
+                throw new CustomException(ErrorCode.LOCATION001, "이미 등록된 관심 지역입니다: " + location);
+            }
+
+            if (interestLocations.size() >= 5) {
+                throw new CustomException(ErrorCode.LOCATION002, "최대 5개의 관심 지역만 등록할 수 있습니다.");
+            }
+
+            interestLocations.add(location);
+        }
+
+        setInterestLocations(user, interestLocations);
+        userRepository.save(user);
+
+        return new ApiResponse("success", "관심 지역이 추가되었습니다.");
+    }
+
+    @Transactional
+    public ApiResponse deleteInterestLocations(String email, List<String> locations) {
+
+        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER001, "해당 사용자를 찾을 수 없습니다."));
+
+        List<String> interestLocations = getInterestLocations(user);
+
+        for (String location : locations) {
+            if (!interestLocations.contains(location)) {
+                throw new CustomException(ErrorCode.LOCATION003, "등록되지 않은 관심 지역입니다: " + location);
+            }
+            interestLocations.remove(location);
+        }
+
+        setInterestLocations(user, interestLocations);
+        userRepository.save(user);
+
+        return new ApiResponse("success", "관심 지역이 삭제되었습니다.");
+    }
+
+    private List<String> getInterestLocations(User user) {
+
+        return Stream.of(user.getInterestLocal1(), user.getInterestLocal2(), user.getInterestLocal3(),
+                user.getInterestLocal4(), user.getInterestLocal5())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+    }
+
+    private void setInterestLocations(User user, List<String> locations) {
+
+        List<Consumer<String>> setters = List.of(
+            user::setInterestLocal1, user::setInterestLocal2, user::setInterestLocal3,
+            user::setInterestLocal4, user::setInterestLocal5
+        );
+
+        for (int i = 0; i < setters.size(); i++) {
+            setters.get(i).accept(i < locations.size() ? locations.get(i) : null);
+        }
     }
 }
