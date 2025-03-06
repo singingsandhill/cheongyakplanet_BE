@@ -79,7 +79,7 @@ public class CommunityService {
 
         Pageable pageable = PageRequest.of(page, size, sortOrder);
 
-        Page<Post> postPage = postRepository.findAllByDeletedAtIsNull(pageable);
+        Page<Post> postPage = postRepository.findAllByDeletedAtIsNullAndIsBlindIsFalse(pageable);
 
         return postPage.map(post -> PostDTO.builder()
                 .id(post.getId())
