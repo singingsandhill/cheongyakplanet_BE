@@ -267,98 +267,18 @@ throw new CustomException(ErrorCode.AUTH002, "권한이 없습니다",
         "Required role: ADMIN, Current role: " + userRole);</code></pre>
         <br>
         <h5>Error Codes</h5>
-        <p>Follow the established pattern:</p>
-        <ul>
-            <li><strong>AUTH001-010</strong>: Authentication and authorization</li>
-            <li><strong>SIGN001-010</strong>: User registration and login</li>
-            <li><strong>POST001-010</strong>: Community posts and comments</li>
-            <li><strong>SUB001-010</strong>: Subscription-related errors</li>
-        </ul>
+        <p>Follow the established pattern in <code>ErrorCode.java</code>. See <a href="./error-codes.md">Error Codes</a> for the complete reference.</p>
         <br>
         <h3>🧪 Testing Requirements</h3>
         <br>
-        <h4>Test Coverage Standards</h4>
+        <p>For detailed testing strategies, coverage thresholds, JaCoCo configuration, and test examples, see <a href="./TEST_COVERAGE_GUIDE.md">Test Coverage Guide</a>.</p>
+        <br>
+        <p><strong>Key Standards:</strong></p>
         <ul>
             <li><strong>Overall Coverage</strong>: 70% minimum</li>
-            <li><strong>Service Layer</strong>: 80% line coverage, 75% branch coverage</li>
-            <li><strong>Critical Business Logic</strong>: 90%+ coverage</li>
-            <li><strong>Error Paths</strong>: All custom exception scenarios tested</li>
+            <li><strong>Service Layer</strong>: 80% line coverage</li>
+            <li><strong>Test Pattern</strong>: Given-When-Then with <code>@DisplayName</code> in Korean</li>
         </ul>
-        <br>
-        <h4>Test Structure (Given-When-Then)</h4>
-        <pre><code class="language-java">@ExtendWith(MockitoExtension.class)
-@DisplayName("구독 서비스 테스트")
-class SubscriptionServiceTest {
-
-    @Mock
-    private SubscriptionRepository repository;
-
-    @InjectMocks
-    private SubscriptionService service;
-
-    @Test
-    @DisplayName("구독 생성 - 성공: 유효한 입력값")
-    void givenValidInput_whenCreateSubscription_thenReturnSubscriptionDTO() {
-        // Given
-        CreateSubscriptionDTO input = CreateSubscriptionDTO.builder()
-                .houseName("래미안 강남포레스트")
-                .region("서울특별시")
-                .city("강남구")
-                .build();
-
-        SubscriptionInfo entity = createTestSubscription();
-        given(repository.save(any(SubscriptionInfo.class))).willReturn(entity);
-
-        // When
-        SubscriptionDTO result = service.createSubscription(input);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getHouseName()).isEqualTo("래미안 강남포레스트");
-        then(repository).should().save(any(SubscriptionInfo.class));
-    }
-
-    @Test
-    @DisplayName("구독 생성 - 실패: 중복된 주택관리번호")
-    void givenDuplicateHouseManageNo_whenCreateSubscription_thenThrowException() {
-        // Given
-        CreateSubscriptionDTO input = createDuplicateInput();
-        given(repository.existsByHouseManageNo(anyString())).willReturn(true);
-
-        // When & Then
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            service.createSubscription(input);
-        });
-
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SUB003);
-        then(repository).should(never()).save(any());
-    }
-
-    private SubscriptionInfo createTestSubscription() {
-        return SubscriptionInfo.builder()
-                .houseNm("래미안 강남포레스트")
-                .houseManageNo("2024000001")
-                .region("서울특별시")
-                .city("강남구")
-                .build();
-    }
-}</code></pre>
-        <br>
-        <h4>Korean Domain Test Data</h4>
-        <p>Use realistic Korean data in tests:</p>
-        <pre><code class="language-java">private User createTestUser() {
-    return User.builder()
-            .email("test@cheonyakplanet.com")
-            .username("청약초보")
-            .role(UserRoleEnum.USER)
-            .monthlyIncome(500) // 500만원
-            .isMarried(true) // 기혼
-            .numChild(2) // 자녀 2명
-            .hasHouse(false) // 무주택
-            .interestLocal1("서울특별시 강남구")
-            .interestLocal2("경기도 성남시")
-            .build();
-}</code></pre>
         <br>
         <h3>👀 Code Review Process</h3>
         <br>
@@ -434,6 +354,13 @@ class SubscriptionServiceTest {
         </ul>
         <br>
         <h3>📝 Commit Message Guidelines</h3>
+        <br>
+        <h4>Format</h4>
+        <pre><code>&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;
+
+&lt;body&gt;
+
+&lt;footer&gt;</code></pre>
         <br>
         <h4>Types</h4>
         <ul>
@@ -609,20 +536,18 @@ DecimalFormat koreanCurrency = new DecimalFormat("#,###원");</code></pre>
             <li><strong><a href="../CLAUDE.md">CLAUDE.md</a></strong>: Complete project understanding</li>
             <li><strong><a href="./architecture-decisions.md">Architecture Decisions</a></strong>: System design rationale</li>
             <li><strong><a href="./api-documentation.md">API Documentation</a></strong>: REST API reference</li>
-            <li><strong><a href="./testing-guide.md">Testing Guide</a></strong>: Detailed testing strategies</li>
+            <li><strong><a href="./TEST_COVERAGE_GUIDE.md">Test Coverage Guide</a></strong>: Detailed testing strategies</li>
             <li><strong><a href="./korean-business-rules.md">Korean Business Rules</a></strong>: Domain knowledge</li>
         </ul>
         <br>
-        <hr>        
+        <hr>
         <br>
-        <p><strong>Contributing Guidelines Version</strong>: 1.0</p>
-        <p><strong>Last Updated</strong>: 2025-06-26</p>
-        <p><strong>Next Review</strong>: 2025-09-19</p>
+        <p><strong>Last Updated</strong>: 2026-03-05</p>
         <br>
         <p>Thank you for contributing to CheonYakPlanet! 🏠🇰🇷</p>
     </section>
     <footer class="footer">
-        <p>Last Updated: 2025-06-26 | <a href="../index.html">문서 홈으로</a></p>
+        <p>Last Updated: 2026-03-05 | <a href="../index.html">문서 홈으로</a></p>
     </footer>
 </div>
 </body>

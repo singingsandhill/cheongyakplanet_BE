@@ -254,98 +254,16 @@ throw new CustomException(ErrorCode.AUTH002, "권한이 없습니다",
 ```
 
 #### Error Codes
-Follow the established pattern:
-- **AUTH001-010**: Authentication and authorization
-- **SIGN001-010**: User registration and login
-- **POST001-010**: Community posts and comments
-- **SUB001-010**: Subscription-related errors
+Follow the established pattern in `ErrorCode.java`. See [Error Codes](./error-codes.md) for the complete reference.
 
-## 🧪 Testing Requirements
+## Testing Requirements
 
-### Test Coverage Standards
+For detailed testing strategies, coverage thresholds, JaCoCo configuration, and test examples, see [Test Coverage Guide](./TEST_COVERAGE_GUIDE.md).
+
+**Key Standards:**
 - **Overall Coverage**: 70% minimum
-- **Service Layer**: 80% line coverage, 75% branch coverage
-- **Critical Business Logic**: 90%+ coverage
-- **Error Paths**: All custom exception scenarios tested
-
-### Test Structure (Given-When-Then)
-```java
-@ExtendWith(MockitoExtension.class)
-@DisplayName("구독 서비스 테스트")
-class SubscriptionServiceTest {
-    
-    @Mock
-    private SubscriptionRepository repository;
-    
-    @InjectMocks
-    private SubscriptionService service;
-    
-    @Test
-    @DisplayName("구독 생성 - 성공: 유효한 입력값")
-    void givenValidInput_whenCreateSubscription_thenReturnSubscriptionDTO() {
-        // Given
-        CreateSubscriptionDTO input = CreateSubscriptionDTO.builder()
-            .houseName("래미안 강남포레스트")
-            .region("서울특별시")
-            .city("강남구")
-            .build();
-        
-        SubscriptionInfo entity = createTestSubscription();
-        given(repository.save(any(SubscriptionInfo.class))).willReturn(entity);
-        
-        // When
-        SubscriptionDTO result = service.createSubscription(input);
-        
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getHouseName()).isEqualTo("래미안 강남포레스트");
-        then(repository).should().save(any(SubscriptionInfo.class));
-    }
-    
-    @Test
-    @DisplayName("구독 생성 - 실패: 중복된 주택관리번호")
-    void givenDuplicateHouseManageNo_whenCreateSubscription_thenThrowException() {
-        // Given
-        CreateSubscriptionDTO input = createDuplicateInput();
-        given(repository.existsByHouseManageNo(anyString())).willReturn(true);
-        
-        // When & Then
-        CustomException exception = assertThrows(CustomException.class, () -> {
-            service.createSubscription(input);
-        });
-        
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.SUB003);
-        then(repository).should(never()).save(any());
-    }
-    
-    private SubscriptionInfo createTestSubscription() {
-        return SubscriptionInfo.builder()
-            .houseNm("래미안 강남포레스트")
-            .houseManageNo("2024000001")
-            .region("서울특별시")
-            .city("강남구")
-            .build();
-    }
-}
-```
-
-### Korean Domain Test Data
-Use realistic Korean data in tests:
-```java
-private User createTestUser() {
-    return User.builder()
-        .email("test@cheonyakplanet.com")
-        .username("청약초보")
-        .role(UserRoleEnum.USER)
-        .monthlyIncome(500)        // 500만원
-        .isMarried(true)           // 기혼
-        .numChild(2)               // 자녀 2명
-        .hasHouse(false)           // 무주택
-        .interestLocal1("서울특별시 강남구")
-        .interestLocal2("경기도 성남시")
-        .build();
-}
-```
+- **Service Layer**: 80% line coverage
+- **Test Pattern**: Given-When-Then with `@DisplayName` in Korean
 
 ## 👀 Code Review Process
 
@@ -584,13 +502,11 @@ DecimalFormat koreanCurrency = new DecimalFormat("#,###원");
 - **[CLAUDE.md](../CLAUDE.md)**: Complete project understanding
 - **[Architecture Decisions](./architecture-decisions.md)**: System design rationale
 - **[API Documentation](./api-documentation.md)**: REST API reference
-- **[Testing Guide](./testing-guide.md)**: Detailed testing strategies
+- **[Test Coverage Guide](./TEST_COVERAGE_GUIDE.md)**: Detailed testing strategies
 - **[Korean Business Rules](./korean-business-rules.md)**: Domain knowledge
 
 ---
 
-**Contributing Guidelines Version**: 1.0  
-**Last Updated**: 2024-06-19  
-**Next Review**: 2024-09-19
+**Last Updated**: 2026-03-05
 
 Thank you for contributing to CheonYakPlanet! 🏠🇰🇷

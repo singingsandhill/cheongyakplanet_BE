@@ -452,7 +452,7 @@ Implement multi-stage content filtering pipeline:
 - **[CLAUDE.md](../CLAUDE.md)**: Complete project understanding guide
 - **[Database Specifications](./database-specs.md)**: Implementation details for database decisions
 - **[API Documentation](./api-documentation.md)**: API design reflecting architectural choices
-- **[Security Guidelines](./security.md)**: Security implementation details
+- **[Deployment Guide](./deployment-guide.md)**: Environment setup and deployment
 - **[Korean Business Rules](./korean-business-rules.md)**: Domain knowledge supporting decisions
 
 ---

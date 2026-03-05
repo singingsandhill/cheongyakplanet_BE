@@ -20,301 +20,315 @@
         <h2>Error Code Reference</h2>
 
         <article>
-            <h3>📋 Overview</h3>
-            <p>이 문서는 CheonYakPlanet 애플리케이션에서 사용되는 모든 오류 코드를 설명, 원인, 해결 방법과 함께 제공합니다.</p>
+            <h3>개요</h3>
+            <p>이 문서는 <code>ErrorCode.java</code>에 정의된 모든 오류 코드의 전체 참조를 제공합니다. 각 오류 코드는 <code>[CATEGORY][NUMBER]</code> 패턴을 따릅니다.</p>
         </article>
 
         <article>
-            <h3>🔢 Error Code Format</h3>
-            <p>오류 코드는 <code>[CATEGORY][NUMBER]</code> 패턴을 따릅니다.</p>
-            <ul>
-                <li><strong>Category</strong>: 기능 영역을 나타내는 3-4자의 접두사</li>
-                <li><strong>Number</strong>: 3자리 순차 번호 (001-999)</li>
-            </ul>
+            <h3>계정 (SIGN)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>SIGN000</code></td>
+                        <td>로그인이 필요한 서비스입니다.</td>
+                        <td>Login required to access this service</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN001</code></td>
+                        <td>일치하는 이메일 없음</td>
+                        <td>No matching email found</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN002</code></td>
+                        <td>중복된 이메일 존재</td>
+                        <td>Duplicate email exists</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN003</code></td>
+                        <td>관리자 가입 토큰 불일치</td>
+                        <td>Admin registration token mismatch</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN004</code></td>
+                        <td>로그인 정보 불일치</td>
+                        <td>Login credentials mismatch</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN005</code></td>
+                        <td>사용자를 찾을 수 없음</td>
+                        <td>User not found</td>
+                    </tr>
+                    <tr>
+                        <td><code>SIGN006</code></td>
+                        <td>탈퇴한 회원</td>
+                        <td>Withdrawn member</td>
+                    </tr>
+                </tbody>
+            </table>
         </article>
 
         <article>
-            <h3>🔐 Authentication & Authorization (AUTH)</h3>
+            <h3>JWT 인증 (AUTH)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>AUTH001</code></td>
+                        <td>유효하지 않은 JWT 서명</td>
+                        <td>Invalid JWT signature</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH002</code></td>
+                        <td>만료된 토큰</td>
+                        <td>Expired token</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH003</code></td>
+                        <td>지원되지 않는 토큰</td>
+                        <td>Unsupported token</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH004</code></td>
+                        <td>claim is empty</td>
+                        <td>JWT claims are empty</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH005</code></td>
+                        <td>유효하지 않은 토큰</td>
+                        <td>Invalid token</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH006</code></td>
+                        <td>로그아웃된 토큰</td>
+                        <td>Logged-out (blacklisted) token</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH007</code></td>
+                        <td>관리자 권한이 필요합니다</td>
+                        <td>Admin role required</td>
+                    </tr>
+                    <tr>
+                        <td><code>AUTH010</code></td>
+                        <td>토큰 없음</td>
+                        <td>Token not provided</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
 
-            <h4>AUTH001 - 인증이 필요한 서비스입니다</h4>
-            <ul>
-                <li><strong>Description</strong>: Authentication required for this service</li>
-                <li><strong>HTTP Status</strong>: 401 Unauthorized</li>
-            </ul>
-            <h4>Typical Causes</h4>
-            <ul>
-                <li>JWT 토큰이 Authorization 헤더에 없음</li>
-                <li>인증 없이 보호된 엔드포인트 요청</li>
-                <li>잘못된 Authorization 헤더 형식</li>
-            </ul>
-            <h4>Resolution</h4>
-            <ul>
-                <li>유효한 JWT 토큰 포함: <code>Authorization: Bearer {token}</code></li>
-                <li>로그인 후 토큰 획득</li>
-                <li>토큰 형식 확인</li>
-            </ul>
-            <h4>Example Response</h4>
+        <article>
+            <h3>커뮤니티 (COMU)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>COMU001</code></td>
+                        <td>게시글 없음</td>
+                        <td>Post not found</td>
+                    </tr>
+                    <tr>
+                        <td><code>COMU002</code></td>
+                        <td>게시글에 수정 권한 없음</td>
+                        <td>No permission to edit post</td>
+                    </tr>
+                    <tr>
+                        <td><code>COMU003</code></td>
+                        <td>이미 반응 함</td>
+                        <td>Already reacted to this content</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>청약 정보 (INFO)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>INFO001</code></td>
+                        <td>해당 아이디의 청약건 없음</td>
+                        <td>No subscription found for this ID</td>
+                    </tr>
+                    <tr>
+                        <td><code>INFO002</code></td>
+                        <td>해당 지역의 청약건 없음</td>
+                        <td>No subscription found for this region</td>
+                    </tr>
+                    <tr>
+                        <td><code>INFO003</code></td>
+                        <td>위치 정보가 없는 청약건입니다.</td>
+                        <td>Subscription has no location data</td>
+                    </tr>
+                    <tr>
+                        <td><code>INFO005</code></td>
+                        <td>지역 테이블 없음, DB확인</td>
+                        <td>Region table missing, check DB</td>
+                    </tr>
+                    <tr>
+                        <td><code>INFO006</code></td>
+                        <td>관심지역 아님</td>
+                        <td>Not an interest location</td>
+                    </tr>
+                    <tr>
+                        <td><code>INFO007</code></td>
+                        <td>이미 추가한 관심 청약</td>
+                        <td>Already added as interest subscription</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>마이페이지 / 사용자 (USER)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>USER001</code></td>
+                        <td>사용자를 찾을 수 없습니다.</td>
+                        <td>User not found</td>
+                    </tr>
+                    <tr>
+                        <td><code>USER002</code></td>
+                        <td>유효하지 않은 입력값입니다.</td>
+                        <td>Invalid input value</td>
+                    </tr>
+                    <tr>
+                        <td><code>USER003</code></td>
+                        <td>이미 탈퇴한 사용자입니다.</td>
+                        <td>Already withdrawn user</td>
+                    </tr>
+                    <tr>
+                        <td><code>USER004</code></td>
+                        <td>회원 탈퇴 시 토큰 삭제에 실패했습니다.</td>
+                        <td>Failed to delete tokens during withdrawal</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>관심 지역 (LOCATION)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>LOCATION001</code></td>
+                        <td>이미 등록된 관심 지역입니다.</td>
+                        <td>Already registered interest location</td>
+                    </tr>
+                    <tr>
+                        <td><code>LOCATION002</code></td>
+                        <td>최대 5개의 관심 지역만 등록할 수 있습니다.</td>
+                        <td>Maximum 5 interest locations allowed</td>
+                    </tr>
+                    <tr>
+                        <td><code>LOCATION003</code></td>
+                        <td>등록되지 않은 관심 지역입니다.</td>
+                        <td>Not a registered interest location</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>기타 (OTHER)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>OTHER001</code></td>
+                        <td>필터 부분 에러</td>
+                        <td>Filter error</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>알 수 없음 (UNK)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>코드</th>
+                        <th>메시지</th>
+                        <th>설명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>UNK000</code></td>
+                        <td>알 수 없는 에러 발생</td>
+                        <td>Unknown error occurred</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <article>
+            <h3>오류 응답 형식</h3>
             <pre><code class="language-json">{
     "status": "fail",
     "data": {
-        "code": "AUTH001",
-        "message": "인증이 필요한 서비스입니다",
-        "details": "Authorization header is missing"
+        "code": "ERROR_CODE",
+        "message": "에러 메시지"
     }
 }</code></pre>
-
-            <h4>AUTH002 - 권한이 없습니다</h4>
-            <ul>
-                <li><strong>Description</strong>: Insufficient permissions</li>
-                <li><strong>HTTP Status</strong>: 403 Forbidden</li>
-            </ul>
-            <h4>Typical Causes</h4>
-            <ul>
-                <li>필요한 역할(예: ADMIN) 미보유</li>
-                <li>다른 사용자 데이터 접근 시도</li>
-                <li>역할 기반 접근 제어 제한</li>
-            </ul>
-            <h4>Resolution</h4>
-            <ul>
-                <li>관리자에게 역할 업그레이드 요청</li>
-                <li>자신의 데이터 요청 확인</li>
-                <li>엔드포인트 권한 설정 확인</li>
-            </ul>
-
-            <h4>AUTH003 - 유효하지 않은 JWT 서명</h4>
-<ul>
-  <li><strong>Description</strong>: Invalid JWT signature</li>
-  <li><strong>HTTP Status</strong>: 401 Unauthorized</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Token tampered with or corrupted</li>
-  <li>Wrong signing key used</li>
-  <li>Token from different environment</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Re-login to get new token</li>
-  <li>Check token integrity</li>
-  <li>Verify environment configuration</li>
-</ul>
-
-<h4>AUTH004 - 만료된 JWT 토큰</h4>
-<ul>
-  <li><strong>Description</strong>: Expired JWT token</li>
-  <li><strong>HTTP Status</strong>: 401 Unauthorized</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Access token expired (60 minutes)</li>
-  <li>System clock skew</li>
-  <li>Token used after expiry</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Use refresh token to get new access token</li>
-  <li>Re-login if refresh token also expired</li>
-  <li>Check system time synchronization</li>
-</ul>
         </article>
 
-        <h3>👤 User Management (SIGN)</h3>
-
-<h4>SIGN001 - 이미 존재하는 회원입니다</h4>
-<ul>
-  <li><strong>Description</strong>: User already exists</li>
-  <li><strong>HTTP Status</strong>: 409 Conflict</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Email already registered</li>
-  <li>Duplicate registration attempt</li>
-  <li>Previous soft-deleted account exists</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Use different email address</li>
-  <li>Try login with existing credentials</li>
-  <li>Contact support for account recovery</li>
-</ul>
-
-<h4>SIGN002 - 존재하지 않는 회원입니다</h4>
-<ul>
-  <li><strong>Description</strong>: User not found</li>
-  <li><strong>HTTP Status</strong>: 404 Not Found</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Email not registered</li>
-  <li>Account was deleted</li>
-  <li>Typo in email address</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Check email spelling</li>
-  <li>Register new account</li>
-  <li>Contact support if account missing</li>
-</ul>
-
-<!-- 다른 SIGN 코드도 동일한 패턴으로 추가 -->
-
-<h3>💬 Community (POST, COMMENT)</h3>
-
-<h4>POST001 - 게시글을 찾을 수 없습니다</h4>
-<ul>
-  <li><strong>Description</strong>: Post not found</li>
-  <li><strong>HTTP Status</strong>: 404 Not Found</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Post ID doesn't exist</li>
-  <li>Post was deleted</li>
-  <li>Access to private post denied</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Check post ID</li>
-  <li>Verify post still exists</li>
-  <li>Contact post author</li>
-</ul>
-
-<h4>COMMENT001 - 댓글을 찾을 수 없습니다</h4>
-<ul>
-  <li><strong>Description</strong>: Comment not found</li>
-  <li><strong>HTTP Status</strong>: 404 Not Found</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Comment ID doesn't exist</li>
-  <li>Comment was deleted</li>
-  <li>Access denied</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Check comment ID</li>
-  <li>Verify comment exists</li>
-  <li>Refresh page</li>
-</ul>
-
-<!-- POST/COMMENT 나머지 코드들도 동일한 패턴으로 추가 -->
-
-<h3>🏠 Subscription (SUB)</h3>
-
-<h4>SUB001 - 청약 정보를 찾을 수 없습니다</h4>
-<ul>
-  <li><strong>Description</strong>: Subscription information not found</li>
-  <li><strong>HTTP Status</strong>: 404 Not Found</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Subscription ID doesn't exist</li>
-  <li>Data not yet synchronized</li>
-  <li>Subscription expired/closed</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Check subscription ID</li>
-  <li>Wait for data sync</li>
-  <li>Search for active subscriptions</li>
-</ul>
-
-<!-- SUB 나머지 코드들도 동일한 패턴으로 추가 -->
-
-<h3>💰 Finance (FIN)</h3>
-
-<h4>FIN001 - 금융 상품을 찾을 수 없습니다</h4>
-<ul>
-  <li><strong>Description</strong>: Financial product not found</li>
-  <li><strong>HTTP Status</strong>: 404 Not Found</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Product ID invalid</li>
-  <li>Product discontinued</li>
-  <li>Data sync delay</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Check product ID</li>
-  <li>Search current products</li>
-  <li>Contact financial institution</li>
-</ul>
-
-<!-- FIN 나머지 코드들도 동일한 패턴으로 추가 -->
-
-<h3>📰 News (NEWS)</h3>
-
-<h4>NEWS001 - 뉴스 크롤링 실패</h4>
-<ul>
-  <li><strong>Description</strong>: News crawling failed</li>
-  <li><strong>HTTP Status</strong>: 500 Internal Server Error</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>External API unavailable</li>
-  <li>Rate limit exceeded</li>
-  <li>Network connectivity issues</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Retry after delay</li>
-  <li>Check API service status</li>
-  <li>Contact system administrator</li>
-</ul>
-
-<!-- NEWS 나머지 코드들도 동일한 패턴으로 추가 -->
-
-<h3>🔧 System (SYS)</h3>
-
-<h4>SYS001 - 시스템 오류가 발생했습니다</h4>
-<ul>
-  <li><strong>Description</strong>: System error occurred</li>
-  <li><strong>HTTP Status</strong>: 500 Internal Server Error</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Unexpected system failure</li>
-  <li>Database connectivity issue</li>
-  <li>Infrastructure problem</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Retry request</li>
-  <li>Contact support</li>
-  <li>Check system status</li>
-</ul>
-
-<!-- SYS 나머지 코드들도 동일한 패턴으로 추가 -->
-
-<h3>✅ Validation (VAL)</h3>
-
-<h4>VAL001 - 필수 입력값이 누락되었습니다</h4>
-<ul>
-  <li><strong>Description</strong>: Required input missing</li>
-  <li><strong>HTTP Status</strong>: 400 Bad Request</li>
-</ul>
-<h4>Typical Causes</h4>
-<ul>
-  <li>Required field empty</li>
-  <li>Null value submitted</li>
-  <li>Missing request parameter</li>
-</ul>
-<h4>Resolution</h4>
-<ul>
-  <li>Provide all required fields</li>
-  <li>Check field names</li>
-  <li>Validate input data</li>
-</ul>
-
         <hr/>
-        <p><strong>Error Code Reference Version</strong>: 1.0</p>
-        <p><strong>Last Updated</strong>: 2025-06-26</p>
-        <p><strong>Total Error Codes</strong>: 50+</p>
+        <p><strong>소스</strong>: <code>src/main/java/org/cheonyakplanet/be/domain/exception/ErrorCode.java</code></p>
+        <p><strong>Last Updated</strong>: 2026-03-05</p>
+        <p><strong>Total Error Codes</strong>: 28</p>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Last Updated: 2025-06-26 | <a href="../index.html">문서 홈으로</a></p>
+        <p>Last Updated: 2026-03-05 | <a href="../index.html">문서 홈으로</a></p>
     </footer>
 </div>
 </body>

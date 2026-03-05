@@ -14,11 +14,7 @@ CheonYakPlanet (청약플래닛) is a comprehensive Korean real estate subscript
 - **JWT Authentication**: Stateless authentication with access/refresh token pairs
 - **Password Recovery**: Email-based password reset with verification codes
 
-**Technical Details:**
-- Access tokens: 60 minutes lifespan
-- Refresh tokens: 24 hours lifespan
-- Database token storage with blacklisting for secure logout
-- BCrypt password encryption
+For authentication architecture details, see [Architecture Decisions](./architecture-decisions.md) ADR-002.
 
 #### 1.2 User Profile Management
 - **Financial Profile**: Income, assets, debt, property ownership tracking
@@ -39,27 +35,13 @@ CheonYakPlanet (청약플래닛) is a comprehensive Korean real estate subscript
 - **Geographic Organization**: Organized by 시/도, 시/군/구, 읍/면/동 hierarchy
 - **Timeline Tracking**: Subscription periods, winner announcements, contract dates
 
-**Data Sources:**
-- LH Corporation (한국토지주택공사) API
-- Ministry of Land (국토교통부) API
-- Administrative district codes (시군구 코드)
-
 #### 2.2 Subscription Eligibility Matching
-- **Ranking System**: 1순위/2순위 priority calculation
-- **Area Eligibility**: 해당지역/기타지역 qualification
-- **Special Supply Categories**: 
-  - 다자녀 가구 (Multi-child families)
-  - 신혼부부 (Newlyweds)
-  - 생애최초 (First-time homebuyers)
-  - 노부모 부양 (Elderly parent support)
-  - 청년 (Youth)
-  - 신생아 (Newborn families)
-
-**Matching Algorithm:**
 - User financial profile vs. subscription requirements
 - Geographic preference matching
 - Special supply category qualification
 - Priority ranking calculation
+
+For Korean business domain terminology and rules (순위제, 특별공급, etc.), see [Korean Business Rules](./korean-business-rules.md).
 
 #### 2.3 Subscription Details
 - **Price Information**: Supply prices, payment schedules, deposit requirements
@@ -110,25 +92,14 @@ CheonYakPlanet (청약플래닛) is a comprehensive Korean real estate subscript
 #### 5.1 Automated News Aggregation
 - **Multi-source Crawling**: Naver News API with 20+ real estate keywords
 - **Content Filtering**: Advanced anti-spam and quality filtering
-- **Trusted Sources**: 30+ verified news domains
-- **Daily Summaries**: Automated markdown-formatted daily reports
-
-**Keywords Monitored:**
-- 부동산, 청약, 분양, LH, 아파트
-- 주택정책, 임대차, 재건축, 재개발
-- 국토교통부, 가계대출, 주담대
+- **Daily Summaries**: Automated daily reports posted to community
+- **Schedule**: Daily at 00:30 KST
 
 #### 5.2 Content Categorization
-- **정책 뉴스**: Government policy and regulation updates
-- **청약/분양**: Subscription and pre-sale announcements
-- **시장 동향**: Market trends and price analysis
-- **자동 게시**: Daily community posts with categorized content
+- **SUBSCRIPTION_INFO**: Subscription and pre-sale news
+- **INFO_SHARE**: Policy, regulation, and other real estate news
 
-#### 5.3 Quality Assurance
-- **Multi-stage Filtering**: 7-step content quality pipeline
-- **Ad Detection**: Strong/weak advertising keyword filtering
-- **Relevance Scoring**: Real estate relevance vs. advertising score
-- **Deduplication**: Title-based duplicate prevention
+For detailed news setup (keywords, API keys, system user), see [External APIs — Naver News API](./external-apis.md).
 
 ### 6. Community Platform
 
@@ -216,54 +187,10 @@ CheonYakPlanet (청약플래닛) is a comprehensive Korean real estate subscript
 3. **Affordability Analysis**: Calculate loan capacity based on income
 4. **Application Guidance**: Get directed to bank websites
 
-## 🔒 Security Features
+## Security & Architecture
 
-### Authentication Security
-- **JWT with Database Storage**: Enhanced security with token blacklisting
-- **Password Encryption**: BCrypt with configurable complexity
-- **Session Management**: Secure logout with token invalidation
-- **Role-based Access**: USER/ADMIN roles with method-level security
-
-### Data Protection
-- **Soft Delete Pattern**: Data preservation with audit trails
-- **Financial Data Encryption**: Secure handling of sensitive information
-- **API Security**: Rate limiting and authentication for all endpoints
-- **CORS Configuration**: Flexible cross-origin resource sharing
-
-### WebSocket Security
-- **JWT Handshake**: Secure real-time connection establishment
-- **Usage Limits**: Anti-abuse mechanisms for chat features
-- **Connection Management**: Automatic cleanup and session management
-
-## 📱 API Design
-
-### RESTful Architecture
-- **Resource-based URLs**: Clear, intuitive endpoint structure
-- **HTTP Method Usage**: Proper GET, POST, PUT, DELETE operations
-- **Consistent Responses**: Standardized ApiResponse wrapper
-- **Error Handling**: Comprehensive error codes and messages
-
-### Documentation
-- **OpenAPI 3.0**: Complete API specification with examples
-- **Swagger UI**: Interactive API documentation
-- **Postman Collections**: Ready-to-use API testing collections
-
-## 🚀 Performance Features
-
-### Scalability
-- **Async Processing**: Non-blocking I/O for external API calls
-- **Thread Pool Management**: Optimized concurrency for data processing
-- **Database Optimization**: Strategic indexing and query optimization
-- **Caching Strategy**: Multi-level caching for performance
-
-### Monitoring
-- **Health Checks**: Comprehensive application health monitoring
-- **Metrics Collection**: Performance metrics with Prometheus integration
-- **Error Tracking**: Detailed logging and error reporting
-- **Audit Trails**: Complete activity tracking for debugging
+For security implementation details (JWT, soft delete, CORS, role-based access), see [Architecture Decisions](./architecture-decisions.md).
 
 ---
 
-**Last Updated**: 2024-06-19  
-**Feature Version**: 1.0  
-**Platform**: Web API + WebSocket
+**Last Updated**: 2026-03-05

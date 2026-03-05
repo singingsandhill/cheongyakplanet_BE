@@ -10,64 +10,52 @@
 <div class="container">
     <header class="header">
         <h1>API 문서</h1>
-        <p class="subtitle">API 문서 문서</p>
-        <p class="description">CheonYakPlanet 백엔드 관련 문서입니다.</p>
+        <p class="subtitle">API 문서</p>
+        <p class="description">CheonYakPlanet 백엔드 API 문서입니다.</p>
     </header>
     <section class="quick-start">
-        <h2>API Documentation</h2>
+        <h2>API 개요</h2>
         <br>
-        <h3>📚 OpenAPI Documentation</h3>
+        <p>CheonYakPlanet provides a RESTful API for Korean real estate subscription management, along with WebSocket support for real-time AI chat.</p>
         <br>
-        <h4>Interactive Documentation</h4>
-        <p> <a href="https://run.blu2print.site:8082/swagger-ui/index.html">Swagger 문서입니다. </a> 동작, 테스트를 하실 수 있습니다.</p>
-        <br>
-        <h4>Swagger Configuration</h4>
-        <ul>
-            <li><strong>OpenAPI Version</strong>: 3.0</li>
-            <li><strong>Authentication</strong>: Bearer Token support</li>
-            <li><strong>Try It Out</strong>: Interactive API testing</li>
-            <li><strong>Code Examples</strong>: Multiple language examples</li>
-        </ul>
-        <br>
-        <hr>
-        <br>
-        <p><strong>API Documentation Version</strong>: 1.0</p>
-        <p><strong>Last Updated</strong>: 2025-06-26</p>
-        <p><strong>Base URL</strong>: <code>https://run.blu2print.site:8082/api</code></p>
-        <br>
-        <h3>🌐 API Overview</h3>
-        <br>
-        <p>CheonYakPlanet provides a comprehensive RESTful API for Korean real estate subscription management, along
-            with WebSocket support for real-time chat functionality.</p>
-        <br>
-        <p><strong>Base URL</strong>: <code>https://run.blu2print.site:8082/api</code></p>
+        <p><strong>Base URL</strong>: <code>http://localhost:8080/api</code></p>
         <p><strong>Authentication</strong>: JWT Bearer Token</p>
         <p><strong>Content-Type</strong>: <code>application/json</code></p>
-        <p><strong>API Version</strong>: 1.0</p>
         <br>
-        <h3>🔐 Authentication</h3>
+
+        <hr>
         <br>
-        <h4>Authentication Flow</h4>
+
+        <h3>인증 (Authentication)</h3>
+        <br>
+        <h4>인증 흐름</h4>
         <ol>
-            <li><strong>Register</strong>: <code>POST /api/member/signup</code></li>
-            <li><strong>Login</strong>: <code>POST /api/member/login</code></li>
-            <li><strong>Use Token</strong>: Include <code>Authorization: Bearer {access_token}</code> in headers</li>
-            <li><strong>Refresh</strong>: <code>POST /api/member/refresh</code> when access token expires</li>
-            <li><strong>Logout</strong>: <code>POST /api/member/logout</code></li>
+            <li><strong>회원가입</strong>: <code>POST /api/member/signup</code></li>
+            <li><strong>로그인</strong>: <code>POST /api/member/login</code></li>
+            <li><strong>토큰 사용</strong>: 헤더에 <code>Authorization: Bearer {access_token}</code> 포함</li>
+            <li><strong>토큰 갱신</strong>: Access Token 만료 시 <code>POST /api/member/auth/refresh</code></li>
+            <li><strong>로그아웃</strong>: <code>POST /api/member/logout</code></li>
         </ol>
         <br>
-        <h4>Token Structure</h4>
+        <h4>토큰 구조</h4>
         <ul>
-            <li><strong>Access Token</strong>: 60 minutes lifespan</li>
-            <li><strong>Refresh Token</strong>: 24 hours lifespan</li>
-            <li><strong>Storage</strong>: Database with blacklisting support</li>
+            <li><strong>Access Token</strong>: 유효기간 60분</li>
+            <li><strong>Refresh Token</strong>: 유효기간 24시간</li>
+            <li><strong>저장 방식</strong>: 데이터베이스 저장 및 블랙리스트 지원</li>
         </ul>
         <br>
-        <h3>📚 API Endpoints</h3>
+
+        <hr>
         <br>
-        <h4>👤 User Management (`/api/member`)</h4>
+
+        <h3>API 엔드포인트</h3>
         <br>
-        <h5>Register User</h5>
+
+        <!-- User Management -->
+        <h4>사용자 관리 (<code>/api/member</code>) &mdash; UserController</h4>
+        <br>
+
+        <h5>회원가입 (Register User)</h5>
         <pre><code class="language-http">POST /api/member/signup
 Content-Type: application/json
 
@@ -78,18 +66,8 @@ Content-Type: application/json
   "phoneNumber": "010-1234-5678"
 }</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "email": "user@cheonyakplanet.com",
-    "username": "청약초보",
-    "role": "USER",
-    "status": "ACTIVE"
-  }
-}</code></pre>
-        <br>
-        <h5>Login</h5>
+
+        <h5>로그인 (Login)</h5>
         <pre><code class="language-http">POST /api/member/login
 Content-Type: application/json
 
@@ -98,39 +76,31 @@ Content-Type: application/json
   "password": "password123!"
 }</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
-    "tokenType": "Bearer",
-    "expiresIn": 3600
-  }
-}</code></pre>
+
+        <h5>로그아웃 (Logout)</h5>
+        <pre><code class="language-http">POST /api/member/logout
+Authorization: Bearer {access_token}</code></pre>
         <br>
-        <h5>Get User Profile</h5>
+
+        <h5>카카오 OAuth 콜백 (Kakao OAuth Callback)</h5>
+        <pre><code class="language-http">GET /api/member/kakao/callback?code={authorization_code}</code></pre>
+        <br>
+
+        <h5>카카오 토큰 교환 (Kakao Token Exchange)</h5>
+        <pre><code class="language-http">GET /api/member/kakao/exchange?state={state}</code></pre>
+        <br>
+
+        <h5>토큰 갱신 (Refresh Token)</h5>
+        <pre><code class="language-http">POST /api/member/auth/refresh?refreshToken={refreshToken}</code></pre>
+        <br>
+
+        <h5>마이페이지 조회 (Get My Page)</h5>
         <pre><code class="language-http">GET /api/member/mypage
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "email": "user@cheonyakplanet.com",
-    "username": "청약초보",
-    "phoneNumber": "010-1234-5678",
-    "marriageStatus": "기혼",
-    "numberOfChildren": 2,
-    "monthlyIncome": 500,
-    "totalAssets": 2000,
-    "hasHouse": false,
-    "interestLocations": ["서울특별시 강남구", "경기도 성남시"]
-  }
-}</code></pre>
-        <br>
-        <h5>Update User Profile</h5>
-        <pre><code class="language-http">PUT /api/member/update
+
+        <h5>프로필 수정 (Update Profile)</h5>
+        <pre><code class="language-http">PATCH /api/member/mypage
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -142,198 +112,135 @@ Content-Type: application/json
   "totalAssets": 2500,
   "hasHouse": false
 }</code></pre>
+        <p>응답에 갱신된 <code>Authorization</code> 헤더가 포함됩니다.</p>
         <br>
-        <h5>Add Interest Location</h5>
-        <pre><code class="language-http">POST /api/member/interest-location
+
+        <h5>회원 탈퇴 (Delete Account / Withdraw)</h5>
+        <pre><code class="language-http">DELETE /api/member/mypage
+Authorization: Bearer {access_token}</code></pre>
+        <br>
+
+        <h5>아이디 찾기 (Find ID)</h5>
+        <pre><code class="language-http">POST /api/member/find-id?email={email}</code></pre>
+        <br>
+
+        <h5>비밀번호 찾기 (Find Password)</h5>
+        <pre><code class="language-http">POST /api/member/find-password?arg0={email}&amp;arg1={username}</code></pre>
+        <br>
+
+        <h5>비밀번호 재설정 (Reset Password)</h5>
+        <pre><code class="language-http">POST /api/member/reset-password?arg0={email}&amp;arg1={username}&amp;arg2={inputCode}&amp;arg3={verificationCode}&amp;arg4={newPassword}&amp;arg5={confirmPassword}</code></pre>
+        <br>
+
+        <h5>관심 지역 추가 (Add Interest Location)</h5>
+        <pre><code class="language-http">POST /api/member/location
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-  "locations": ["서울특별시 강남구", "경기도 성남시", "서울특별시 서초구"]
+  "locations": ["서울특별시 강남구", "경기도 성남시"]
 }</code></pre>
         <br>
-        <h5>Refresh Token</h5>
-        <pre><code class="language-http">POST /api/member/refresh
-Content-Type: application/json
 
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiJ9..."
-}</code></pre>
-        <br>
-        <h5>Logout</h5>
-        <pre><code class="language-http">POST /api/member/logout
+        <h5>관심 지역 삭제 (Remove Interest Location)</h5>
+        <pre><code class="language-http">DELETE /api/member/location?locations=서울특별시 강남구&amp;locations=경기도 성남시
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <h4>🏠 Subscription Information (`/api/info`)</h4>
+
+        <hr>
         <br>
-        <h5>Get Subscription Details</h5>
-        <pre><code class="language-http">GET /api/info/subscription/{subscriptionId}
+
+        <!-- Subscription Information -->
+        <h4>청약 정보 (<code>/api/info</code>) &mdash; InfoController</h4>
+        <br>
+
+        <h5>청약 목록 조회 - 페이지네이션 (List Subscriptions)</h5>
+        <pre><code class="language-http">GET /api/info/subscription?page=0&amp;size=10&amp;sort=rceptEndde</code></pre>
+        <br>
+
+        <h5>청약 상세 조회 (Get Subscription Detail)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/{id}</code></pre>
+        <br>
+
+        <h5>지역별 청약 목록 조회 (List Subscriptions by Region)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/list?region=서울특별시&amp;city=강남구</code></pre>
+        <br>
+
+        <h5>인프라 정보 조회 (Get Infrastructure Info)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/{id}/detail/infra</code></pre>
+        <br>
+
+        <h5>공공시설 조회 (Get Public Facilities)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/{id}/detail/facilities</code></pre>
+        <br>
+
+        <h5>지역 목록 조회 (Get Region List)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/regionlist</code></pre>
+        <br>
+
+        <h5>시/군/구 목록 조회 (Get City List by Region)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/citylist?region=서울특별시</code></pre>
+        <br>
+
+        <h5>내 관심지역 청약 조회 (Get My Subscriptions by Interest Locations)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/mysubscriptions
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "id": 1,
-    "houseName": "래미안 강남포레스트",
-    "houseManageNo": "2024000001",
-    "publicationNumber": "2024강남01",
-    "supplyLocation": "서울특별시 강남구 대치동",
-    "region": "서울특별시",
-    "city": "강남구",
-    "district": "대치동",
-    "receptionStartDate": "2024-07-01",
-    "receptionEndDate": "2024-07-03",
-    "specialSupplyStartDate": "2024-06-25",
-    "specialSupplyEndDate": "2024-06-27",
-    "coordinates": {
-      "latitude": 37.5665,
-      "longitude": 127.0015
-    },
-    "priceInfo": [
-      {
-        "housingType": "84㎡",
-        "supplyPrice": 1200000000,
-        "supplyCount": 100
-      }
-    ],
-    "specialSupplyTargets": {
-      "multichild": 20,
-      "newlywed": 30,
-      "firstTime": 25
-    }
-  }
-}</code></pre>
-        <br>
-        <h5>Search Subscriptions</h5>
-        <pre><code class="language-http">GET /api/info/subscriptions?region=서울특별시&amp;city=강남구&amp;page=0&amp;size=10&amp;sort=receptionStartDate,desc
+
+        <h5>청약 좋아요 (Like Subscription)</h5>
+        <pre><code class="language-http">POST /api/info/subscription/like/{subscriptionId}
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <p><strong>Query Parameters:</strong></p>
-        <ul>
-            <li><code>region</code>: 시/도 (optional)</li>
-            <li><code>city</code>: 시/군/구 (optional)</li>
-            <li><code>year</code>: 년도 (optional)</li>
-            <li><code>month</code>: 월 (optional)</li>
-            <li><code>page</code>: 페이지 번호 (default: 0)</li>
-            <li><code>size</code>: 페이지 크기 (default: 10)</li>
-            <li><code>sort</code>: 정렬 기준 (default: receptionStartDate,desc)</li>
-        </ul>
-        <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "content": [
-      {
-        "id": 1,
-        "houseName": "래미안 강남포레스트",
-        "supplyLocation": "서울특별시 강남구 대치동",
-        "receptionStartDate": "2024-07-01",
-        "receptionEndDate": "2024-07-03",
-        "isLiked": false
-      }
-    ],
-    "pageable": {
-      "pageNumber": 0,
-      "pageSize": 10,
-      "sort": {
-        "sorted": true,
-        "orderBy": "receptionStartDate",
-        "direction": "DESC"
-      }
-    },
-    "totalElements": 150,
-    "totalPages": 15,
-    "first": true,
-    "last": false
-  }
-}</code></pre>
-        <br>
-        <h5>Get User Interest Subscriptions</h5>
-        <pre><code class="language-http">GET /api/info/interest-subscriptions?page=0&amp;size=10
+
+        <h5>청약 좋아요 취소 (Unlike Subscription)</h5>
+        <pre><code class="language-http">DELETE /api/info/subscription/like/{subscriptionLikeId}
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <h5>Get Infrastructure Information</h5>
-        <pre><code class="language-http">GET /api/info/infrastructure?latitude=37.5665&amp;longitude=127.0015
+
+        <h5>좋아요한 청약 목록 조회 (Get Liked Subscriptions)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/like
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "schools": [
-      {
-        "name": "대치초등학교",
-        "category": "초등학교",
-        "type": "공립",
-        "distance": 0.3,
-        "address": "서울특별시 강남구 대치동"
-      }
-    ],
-    "stations": [
-      {
-        "name": "대치역",
-        "line": "3호선",
-        "type": "지하철",
-        "distance": 0.5
-      }
-    ],
-    "publicFacilities": [
-      {
-        "name": "강남구청",
-        "category": "행정기관",
-        "distance": 1.2
-      }
-    ]
-  }
-}</code></pre>
-        <br>
-        <h5>Like/Unlike Subscription</h5>
-        <pre><code class="language-http">POST /api/info/subscription/{subscriptionId}/like
+
+        <h5>청약 좋아요 여부 확인 (Check If Subscription Is Liked)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/islike?id={subscriptionId}
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <pre><code class="language-http">DELETE /api/info/subscription/{subscriptionId}/like
+
+        <h5>다가오는 좋아요 청약 조회 (Get Upcoming Liked Subscriptions)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/like/upcoming
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <h4>💬 Community (`/api/community`)</h4>
-        <br>
-        <h5>Get Posts</h5>
-        <pre><code class="language-http">GET /api/community/posts?category=SUBSCRIPTION_INQUIRY&amp;page=0&amp;size=10&amp;sort=createdDate,desc
+
+        <h5>마감 임박 좋아요 청약 조회 (Get Closing Liked Subscriptions)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/like/closing
 Authorization: Bearer {access_token}</code></pre>
         <br>
-        <p><strong>Query Parameters:</strong></p>
-        <ul>
-            <li><code>category</code>: POST 카테고리 (optional)</li>
-            <li><code>search</code>: 검색어 (optional)</li>
-            <li><code>page</code>: 페이지 번호 (default: 0)</li>
-            <li><code>size</code>: 페이지 크기 (default: 10)</li>
-            <li><code>sort</code>: 정렬 기준 (default: createdDate,desc)</li>
-        </ul>
+
+        <h5>월별 청약 조회 (Get Subscriptions by Month)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/bymonth?year=2024&amp;month=6</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "content": [
-      {
-        "id": 1,
-        "title": "강남구 청약 질문",
-        "content": "강남구 신규 분양 아파트 청약 자격 조건이 궁금합니다.",
-        "username": "청약초보",
-        "category": "SUBSCRIPTION_INQUIRY",
-        "views": 150,
-        "likes": 5,
-        "commentCount": 3,
-        "createdDate": "2024-06-19T10:30:00"
-      }
-    ],
-    "totalElements": 50,
-    "totalPages": 5
-  }
-}</code></pre>
+
+        <h5>가격 요약 조회 - 동 단위 (Get Price Summary by District)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/PriceSummary?region=서울특별시&amp;city=강남구&amp;umdNm=대치동</code></pre>
         <br>
-        <h5>Create Post</h5>
+
+        <h5>가격 요약 조회 - 지역 단위 (Get Price Summary by Region)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/PriceSummary/Region?region=서울특별시&amp;city=강남구</code></pre>
+        <br>
+
+        <h5>인기 청약 조회 (Get Popular Subscription)</h5>
+        <pre><code class="language-http">GET /api/info/subscription/popular</code></pre>
+        <br>
+
+        <hr>
+        <br>
+
+        <!-- Community -->
+        <h4>커뮤니티 (<code>/api/community</code>) &mdash; CommunityController</h4>
+        <br>
+
+        <h5>게시글 작성 (Create Post)</h5>
         <pre><code class="language-http">POST /api/community/posts
 Authorization: Bearer {access_token}
 Content-Type: application/json
@@ -344,289 +251,200 @@ Content-Type: application/json
   "category": "SUBSCRIPTION_INQUIRY"
 }</code></pre>
         <br>
-        <h5>Get Post Details</h5>
-        <pre><code class="language-http">GET /api/community/posts/{postId}
-Authorization: Bearer {access_token}</code></pre>
+
+        <h5>게시글 목록 조회 - 페이지네이션 (Get Posts)</h5>
+        <pre><code class="language-http">GET /api/community/posts?sort=time&amp;page=0&amp;size=10</code></pre>
         <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "id": 1,
-    "title": "강남구 청약 질문",
-    "content": "강남구 신규 분양 아파트 청약 자격 조건이 궁금합니다.",
-    "username": "청약초보",
-    "category": "SUBSCRIPTION_INQUIRY",
-    "views": 151,
-    "likes": 5,
-    "createdDate": "2024-06-19T10:30:00",
-    "comments": [
-      {
-        "id": 1,
-        "content": "1순위 자격은 청약통장 가입 기간과 지역에 따라 결정됩니다.",
-        "username": "청약전문가",
-        "createdDate": "2024-06-19T11:00:00",
-        "replies": [
-          {
-            "id": 1,
-            "content": "감사합니다! 추가 질문이 있어요.",
-            "username": "청약초보",
-            "createdDate": "2024-06-19T11:15:00"
-          }
-        ]
-      }
-    ]
-  }
-}</code></pre>
+
+        <h5>게시글 상세 조회 (Get Post Detail)</h5>
+        <pre><code class="language-http">GET /api/community/post/{id}
+Authorization: Bearer {access_token} (optional)</code></pre>
         <br>
-        <h5>Like/Unlike Post</h5>
-        <pre><code class="language-http">POST /api/community/posts/{postId}/like
-Authorization: Bearer {access_token}</code></pre>
-        <br>
-        <pre><code class="language-http">POST /api/community/posts/{postId}/dislike
-Authorization: Bearer {access_token}</code></pre>
-        <br>
-        <h5>Add Comment</h5>
-        <pre><code class="language-http">POST /api/community/posts/{postId}/comments
+
+        <h5>게시글 수정 (Update Post)</h5>
+        <pre><code class="language-http">PATCH /api/community/post/{id}
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-  "content": "1순위 자격은 청약통장 가입 기간과 지역에 따라 결정됩니다."
+  "title": "수정된 제목",
+  "content": "수정된 내용"
 }</code></pre>
         <br>
-        <h5>Add Reply</h5>
-        <pre><code class="language-http">POST /api/community/comments/{commentId}/replies
+
+        <h5>게시글 삭제 (Delete Post)</h5>
+        <pre><code class="language-http">DELETE /api/community/post/{id}
+Authorization: Bearer {access_token}</code></pre>
+        <br>
+
+        <h5>게시글 좋아요 (Like Post)</h5>
+        <pre><code class="language-http">POST /api/community/post/like/{id}
+Authorization: Bearer {access_token} (optional)</code></pre>
+        <br>
+
+        <h5>게시글 싫어요 (Dislike Post)</h5>
+        <pre><code class="language-http">POST /api/community/post/dislike/{id}
+Authorization: Bearer {access_token} (optional)</code></pre>
+        <br>
+
+        <h5>내 게시글 조회 (Get My Posts)</h5>
+        <pre><code class="language-http">GET /api/community/post/my?sort=time&amp;page=0&amp;size=10
+Authorization: Bearer {access_token}</code></pre>
+        <br>
+
+        <h5>댓글 작성 (Add Comment to Post)</h5>
+        <pre><code class="language-http">POST /api/community/comment/{postId}
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-  "content": "감사합니다! 추가 질문이 있어요."
+  "content": "댓글 내용"
 }</code></pre>
         <br>
-        <h4>🏦 Finance (`/api/finance`)</h4>
-        <br>
-        <h5>Get House Loans</h5>
-        <pre><code class="language-http">GET /api/finance/house-loans?page=0&amp;size=10
-Authorization: Bearer {access_token}</code></pre>
-        <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "content": [
-      {
-        "id": 1,
-        "bankName": "국민은행",
-        "productName": "주택담보대출 우대형",
-        "joinMethod": "인터넷, 스마트폰, 영업점",
-        "loanLimit": "최대 10억원",
-        "interestRateMin": 3.5,
-        "interestRateMax": 5.2,
-        "interestRateAvg": 4.1
-      }
-    ],
-    "totalElements": 25
-  }
-}</code></pre>
-        <br>
-        <h5>Get Mortgages</h5>
-        <pre><code class="language-http">GET /api/finance/mortgages?page=0&amp;size=10
-Authorization: Bearer {access_token}</code></pre>
-        <br>
-        <h4>📰 News (`/api/news`)</h4>
-        <br>
-        <h5>Manual News Crawl (Admin Only)</h5>
-        <pre><code class="language-http">POST /api/news/crawl
-Authorization: Bearer {admin_access_token}</code></pre>
-        <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "message": "뉴스 크롤링이 완료되었습니다.",
-    "articlesProcessed": 45,
-    "categorizedNews": {
-      "policy": 12,
-      "subscription": 18,
-      "market": 15
-    }
-  }
-}</code></pre>
-        <br>
-        <h4>🏠 Home Dashboard (`/api/home`)</h4>
-        <br>
-        <h5>Get Dashboard Data</h5>
-        <pre><code class="language-http">GET /api/home/dashboard
-Authorization: Bearer {access_token}</code></pre>
-        <br>
-        <p><strong>Response (200 OK):</strong></p>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    "popularLocations": [
-      {
-        "region": "서울특별시",
-        "city": "강남구",
-        "subscriptionCount": 15,
-        "popularity": 85
-      }
-    ],
-    "recentSubscriptions": [
-      {
-        "id": 1,
-        "houseName": "래미안 강남포레스트",
-        "supplyLocation": "서울특별시 강남구 대치동",
-        "receptionStartDate": "2024-07-01"
-      }
-    ],
-    "trendingPosts": [
-      {
-        "id": 1,
-        "title": "강남구 청약 질문",
-        "views": 150,
-        "likes": 5
-      }
-    ]
-  }
-}</code></pre>
-        <br>
-        <h5>Get Popular Locations</h5>
-        <pre><code class="language-http">GET /api/home/popular-locations</code></pre>
-        <br>
-        <h4>🔧 Admin Data Management (`/api/data`)</h4>
-        <br>
-        <h5>Refresh Subscription Data (Admin Only)</h5>
-        <pre><code class="language-http">POST /api/data/refresh-subscriptions
-Authorization: Bearer {admin_access_token}</code></pre>
-        <br>
-        <h5>Update Real Estate Prices (Admin Only)</h5>
-        <pre><code class="language-http">POST /api/data/update-prices?yyyyMM=202406
-Authorization: Bearer {admin_access_token}</code></pre>
-        <br>
-        <h3>🔌 WebSocket API</h3>
-        <br>
-        <h4>Real-time Chat</h4>
-        <br>
-        <h5>Connection Endpoint</h5>
-        <pre><code>ws://localhost:8080/ws/chat</code></pre>
-        <br>
-        <h5>Authentication</h5>
-        <p>Include JWT token in handshake:</p>
-        <pre><code class="language-javascript">const token = "your_jwt_token";
-const socket = new WebSocket(`ws://localhost:8080/ws/chat?token=${token}`);</code></pre>
-        <br>
-        <h5>Message Format</h5>
-        <p><strong>Send Message:</strong></p>
-        <pre><code class="language-json">{
-  "type": "chat",
-  "content": "강남구 청약 자격 조건이 궁금해요"
-}</code></pre>
-        <br>
-        <p><strong>Receive Message:</strong></p>
-        <pre><code class="language-json">{
-  "type": "response",
-  "content": "강남구 청약을 위해서는 다음 조건들을 확인해보세요:\n1. 청약통장 가입 기간\n2. 지역 거주 요건\n3. 소득 및 자산 조건",
-  "timestamp": "2024-06-19T14:30:00Z"
-}</code></pre>
-        <br>
-        <h5>Usage Limits</h5>
-        <ul>
-            <li><strong>Daily Limit</strong>: 15 messages per user</li>
-            <li><strong>Rate Limiting</strong>: 1 message per 2 seconds</li>
-            <li><strong>Session Timeout</strong>: 30 minutes of inactivity</li>
-        </ul>
-        <br>
-        <h5>Connection Events</h5>
-        <pre><code class="language-javascript">socket.onopen = function(event) {
-  console.log("Chat connected");
-};
 
-socket.onmessage = function(event) {
-  const message = JSON.parse(event.data);
-  console.log("AI Response:", message.content);
-};
+        <h5>대댓글 작성 (Add Reply to Comment)</h5>
+        <pre><code class="language-http">POST /api/community/comment/comment/{commentId}
+Authorization: Bearer {access_token}
+Content-Type: application/json
 
-socket.onerror = function(error) {
-  console.log("WebSocket error:", error);
-};
-
-socket.onclose = function(event) {
-  console.log("Chat disconnected");
-};</code></pre>
-        <br>
-        <h3>📊 Response Format</h3>
-        <br>
-        <h4>Success Response</h4>
-        <pre><code class="language-json">{
-  "status": "success",
-  "data": {
-    // Response data
-  }
+{
+  "content": "대댓글 내용"
 }</code></pre>
-        <br>
-        <h4>Error Response</h4>
-        <p>```json</p>
-        <p>{</p>
-        <p>"status": "fail",</p>
-        <p>"data": {</p>
-        <p>"code": "AUTH001",</p>
-        <p>"message": "인증이 필요한 서비스입니다",</p>
-        <p>"details": "JWT token is missing or invalid"</p>
-        <p>}</p>
-        <p>}</p>
-        <p>```</p>
-        <br>
-        <h3>🚫 Error Codes</h3>
-        <br>
-        <h4>Authentication Errors</h4>
-        <li>**AUTH001**: 인증이 필요한 서비스입니다</li>
-        <li>**AUTH002**: 권한이 없습니다</li>
-        <li>**AUTH003**: 유효하지 않은 JWT 서명</li>
-        <li>**AUTH004**: 만료된 JWT 토큰</li>
-        <li>**AUTH005**: JWT 토큰이 블랙리스트에 있습니다</li>
-        <br>
-        <h4>User Management Errors</h4>
-        <li>**SIGN001**: 이미 존재하는 회원입니다</li>
-        <li>**SIGN002**: 존재하지 않는 회원입니다</li>
-        <li>**SIGN003**: 비밀번호가 일치하지 않습니다</li>
-        <li>**SIGN004**: 유효하지 않은 이메일 형식입니다</li>
-        <br>
-        <h4>Community Errors</h4>
-        <ul>
-            <li><strong>POST001</strong>: 게시글을 찾을 수 없습니다</li>
-            <li><strong>POST002</strong>: 게시글 작성 권한이 없습니다</li>
-            <li><strong>COMMENT001</strong>: 댓글을 찾을 수 없습니다</li>
-        </ul>
-        <br>
-        <h4>Subscription Errors</h4>
-        <ul>
-            <li><strong>SUB001</strong>: 청약 정보를 찾을 수 없습니다</li>
-            <li><strong>SUB002</strong>: 청약 기간이 아닙니다</li>
-        </ul>
-        <br>
-        <h3>🔄 Rate Limiting</h3>
-        <br>
-        <h4>API Rate Limits</h4>
-        <ul>
-            <li><strong>Authentication</strong>: 5 requests per minute per IP</li>
-            <li><strong>General API</strong>: 100 requests per minute per user</li>
-            <li><strong>WebSocket</strong>: 1 message per 2 seconds per user</li>
-            <li><strong>Admin API</strong>: 10 requests per minute per admin</li>
-        </ul>
-        <br>
-        <h4>Headers</h4>
-        <p>Response includes rate limit headers:</p>
-        <pre><code class="language-http">X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1624123456</code></pre>
         <br>
 
         <hr>
+        <br>
+
+        <!-- Home / Main -->
+        <h4>메인 페이지 (<code>/api/main</code>) &mdash; HomeController</h4>
+        <br>
+
+        <h5>인기 지역 조회 (Get Popular Locations)</h5>
+        <pre><code class="language-http">GET /api/main/popular-locations</code></pre>
+        <br>
+
+        <h5>내 관심 지역 조회 (Get My Interest Locations)</h5>
+        <pre><code class="language-http">GET /api/main/my-locations
+Authorization: Bearer {access_token}</code></pre>
+        <br>
+
+        <h5>인기 게시글 조회 (Get Popular Content)</h5>
+        <pre><code class="language-http">GET /api/main/popular-content</code></pre>
+        <br>
+
+        <hr>
+        <br>
+
+        <!-- News -->
+        <h4>뉴스 (<code>/api/news</code>) &mdash; NewsController</h4>
+        <br>
+
+        <h5>뉴스 수동 크롤링 - 관리자 전용 (Manual News Crawl)</h5>
+        <pre><code class="language-http">POST /api/news/crawl
+Authorization: Bearer {admin_access_token}</code></pre>
+        <p><code>ADMIN</code> 역할이 필요합니다.</p>
+        <br>
+
+        <hr>
+        <br>
+
+        <!-- Admin Data Management -->
+        <h4>관리자 데이터 관리 (<code>/api/data</code>) &mdash; DataController</h4>
+        <br>
+        <p>모든 엔드포인트에 <code>ADMIN</code> 역할이 필요합니다.</p>
+        <br>
+
+        <h5>아파트 청약 데이터 조회 (Fetch Apartment Subscription Data)</h5>
+        <pre><code class="language-http">GET /api/data/subscription/apartment
+Authorization: Bearer {admin_access_token}</code></pre>
+        <br>
+
+        <h5>전체 좌표 갱신 (Update All Coordinates)</h5>
+        <pre><code class="language-http">PUT /api/data/updateAllCoordinates
+Authorization: Bearer {admin_access_token}</code></pre>
+        <br>
+
+        <h5>모기지 데이터 조회 (Fetch Mortgage Data)</h5>
+        <pre><code class="language-http">GET /api/data/mortgage
+Authorization: Bearer {admin_access_token}</code></pre>
+        <br>
+
+        <h5>주택 대출 데이터 조회 (Fetch House Loan Data)</h5>
+        <pre><code class="language-http">GET /api/data/hosueloan
+Authorization: Bearer {admin_access_token}</code></pre>
+        <br>
+
+        <h5>부동산 가격 데이터 갱신 (Refresh Real Estate Price Data)</h5>
+        <pre><code class="language-http">POST /api/data/refresh?yyyyMM=202406
+Authorization: Bearer {admin_access_token}</code></pre>
+        <br>
+
+        <hr>
+        <br>
+
+        <!-- WebSocket API -->
+        <h3>WebSocket API</h3>
+        <br>
+
+        <h4>실시간 AI 채팅 (Real-time AI Chat)</h4>
+        <br>
+
+        <h5>연결 (Connection)</h5>
+        <pre><code>ws://localhost:8080/ws/chat</code></pre>
+        <p>JWT 토큰은 <code>JwtHandshakeInterceptor</code>를 통해 핸드셰이크 시 검증됩니다.</p>
+        <br>
+        <pre><code class="language-javascript">const socket = new WebSocket(`ws://localhost:8080/ws/chat?token=${token}`);</code></pre>
+        <br>
+
+        <h5>메시지 형식 (Message Format)</h5>
+        <p>텍스트 메시지를 직접 전송합니다 (JSON이 아닌 일반 텍스트):</p>
+        <pre><code>강남구 청약 자격 조건이 궁금해요</code></pre>
+        <p>서버는 Gemini 2.0을 통해 AI 생성 텍스트로 응답합니다.</p>
+        <br>
+
+        <h5>사용 제한 (Usage Limits)</h5>
+        <ul>
+            <li><strong>일일 제한</strong>: 사용자당 15개 메시지 (매일 00:00 UTC에 초기화)</li>
+            <li><strong>동시 세션</strong>: 사용자당 1개 세션</li>
+            <li><strong>자동 요약</strong>: 5개 이상 메시지 후 대화 자동 요약</li>
+        </ul>
+        <br>
+
+        <hr>
+        <br>
+
+        <!-- Response Format -->
+        <h3>응답 형식 (Response Format)</h3>
+        <br>
+
+        <h4>성공 응답 (Success Response)</h4>
+        <pre><code class="language-json">{
+  "status": "success",
+  "data": { ... }
+}</code></pre>
+        <br>
+
+        <h4>오류 응답 (Error Response)</h4>
+        <pre><code class="language-json">{
+  "status": "fail",
+  "data": {
+    "code": "AUTH001",
+    "message": "유효하지 않은 JWT 서명"
+  }
+}</code></pre>
+        <br>
+        <p>전체 오류 코드 목록은 <a href="./error-codes.html">오류 코드 문서</a>를 참고하세요.</p>
+        <br>
+
+        <hr>
+        <br>
+
+        <p><strong>Last Updated</strong>: 2026-03-05</p>
+        <p><strong>Base URL</strong>: <code>http://localhost:8080/api</code></p>
 
     </section>
     <footer class="footer">
-        <p>Last Updated: 2025-06-26 | <a href="../index.html">문서 홈으로</a></p>
+        <p>Last Updated: 2026-03-05 | <a href="../index.html">문서 홈으로</a></p>
     </footer>
 </div>
 </body>

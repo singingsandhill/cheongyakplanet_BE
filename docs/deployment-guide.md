@@ -217,7 +217,9 @@ java -jar -Dspring.profiles.active=prod build/libs/be-1.0.0.jar
 ./gradlew jacocoTestCoverageVerification
 ```
 
-## 🐳 Docker Deployment
+## 🐳 Docker Deployment (Example / Recommended)
+
+> **Note**: Docker files (Dockerfile, docker-compose.yml) are not included in the project repository. The configurations below are recommended examples for containerized deployment.
 
 ### Dockerfile
 ```dockerfile
@@ -500,7 +502,9 @@ curl http://localhost:8080/actuator/health/db
 curl http://localhost:8080/actuator/health/external-apis
 ```
 
-## 🔄 CI/CD Pipeline
+## 🔄 CI/CD Pipeline (Example / Recommended)
+
+> **Note**: CI/CD pipeline configuration is not included in the project repository. The example below is a recommended GitHub Actions workflow.
 
 ### GitHub Actions
 ```yaml

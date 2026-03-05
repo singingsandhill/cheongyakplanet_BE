@@ -1,21 +1,20 @@
 # API Documentation
 
-## 🌐 API Overview
+## API Overview
 
-CheonYakPlanet provides a comprehensive RESTful API for Korean real estate subscription management, along with WebSocket support for real-time chat functionality.
+CheonYakPlanet provides a RESTful API for Korean real estate subscription management, along with WebSocket support for real-time AI chat.
 
-**Base URL**: `http://localhost:8080/api`  
-**Authentication**: JWT Bearer Token  
-**Content-Type**: `application/json`  
-**API Version**: 1.0
+**Base URL**: `http://localhost:8080/api`
+**Authentication**: JWT Bearer Token
+**Content-Type**: `application/json`
 
-## 🔐 Authentication
+## Authentication
 
 ### Authentication Flow
 1. **Register**: `POST /api/member/signup`
 2. **Login**: `POST /api/member/login`
 3. **Use Token**: Include `Authorization: Bearer {access_token}` in headers
-4. **Refresh**: `POST /api/member/refresh` when access token expires
+4. **Refresh**: `POST /api/member/auth/refresh` when access token expires
 5. **Logout**: `POST /api/member/logout`
 
 ### Token Structure
@@ -23,9 +22,9 @@ CheonYakPlanet provides a comprehensive RESTful API for Korean real estate subsc
 - **Refresh Token**: 24 hours lifespan
 - **Storage**: Database with blacklisting support
 
-## 📚 API Endpoints
+## API Endpoints
 
-### 👤 User Management (`/api/member`)
+### User Management (`/api/member`) — UserController
 
 #### Register User
 ```http
@@ -40,19 +39,6 @@ Content-Type: application/json
 }
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "email": "user@cheonyakplanet.com",
-        "username": "청약초보",
-        "role": "USER",
-        "status": "ACTIVE"
-    }
-}
-```
-
 #### Login
 ```http
 POST /api/member/login
@@ -64,46 +50,36 @@ Content-Type: application/json
 }
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
-        "refreshToken": "eyJhbGciOiJIUzI1NiJ9...",
-        "tokenType": "Bearer",
-        "expiresIn": 3600
-    }
-}
+#### Logout
+```http
+POST /api/member/logout
+Authorization: Bearer {access_token}
 ```
 
-#### Get User Profile
+#### Kakao OAuth Callback
+```http
+GET /api/member/kakao/callback?code={authorization_code}
+```
+
+#### Kakao Token Exchange
+```http
+GET /api/member/kakao/exchange?state={state}
+```
+
+#### Refresh Token
+```http
+POST /api/member/auth/refresh?refreshToken={refreshToken}
+```
+
+#### Get My Page
 ```http
 GET /api/member/mypage
 Authorization: Bearer {access_token}
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "email": "user@cheonyakplanet.com",
-        "username": "청약초보",
-        "phoneNumber": "010-1234-5678",
-        "marriageStatus": "기혼",
-        "numberOfChildren": 2,
-        "monthlyIncome": 500,
-        "totalAssets": 2000,
-        "hasHouse": false,
-        "interestLocations": ["서울특별시 강남구", "경기도 성남시"]
-    }
-}
-```
-
-#### Update User Profile
+#### Update Profile
 ```http
-PUT /api/member/update
+PATCH /api/member/mypage
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
@@ -117,219 +93,150 @@ Content-Type: application/json
 }
 ```
 
+Response includes updated `Authorization` header with new token.
+
+#### Delete Account (Withdraw)
+```http
+DELETE /api/member/mypage
+Authorization: Bearer {access_token}
+```
+
+#### Find ID
+```http
+POST /api/member/find-id?email={email}
+```
+
+#### Find Password
+```http
+POST /api/member/find-password?arg0={email}&arg1={username}
+```
+
+#### Reset Password
+```http
+POST /api/member/reset-password?arg0={email}&arg1={username}&arg2={inputCode}&arg3={verificationCode}&arg4={newPassword}&arg5={confirmPassword}
+```
+
 #### Add Interest Location
 ```http
-POST /api/member/interest-location
+POST /api/member/location
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-    "locations": ["서울특별시 강남구", "경기도 성남시", "서울특별시 서초구"]
+    "locations": ["서울특별시 강남구", "경기도 성남시"]
 }
 ```
 
-#### Refresh Token
+#### Remove Interest Location
 ```http
-POST /api/member/refresh
-Content-Type: application/json
-
-{
-    "refreshToken": "eyJhbGciOiJIUzI1NiJ9..."
-}
-```
-
-#### Logout
-```http
-POST /api/member/logout
+DELETE /api/member/location?locations=서울특별시 강남구&locations=경기도 성남시
 Authorization: Bearer {access_token}
 ```
 
-### 🏠 Subscription Information (`/api/info`)
+---
 
-#### Get Subscription Details
+### Subscription Information (`/api/info`) — InfoController
+
+#### List Subscriptions (Paginated)
 ```http
-GET /api/info/subscription/{subscriptionId}
+GET /api/info/subscription?page=0&size=10&sort=rceptEndde
+```
+
+#### Get Subscription Detail
+```http
+GET /api/info/subscription/{id}
+```
+
+#### List Subscriptions by Region
+```http
+GET /api/info/subscription/list?region=서울특별시&city=강남구
+```
+
+#### Get Infrastructure Info
+```http
+GET /api/info/subscription/{id}/detail/infra
+```
+
+#### Get Public Facilities
+```http
+GET /api/info/subscription/{id}/detail/facilities
+```
+
+#### Get Region List
+```http
+GET /api/info/subscription/regionlist
+```
+
+#### Get City List by Region
+```http
+GET /api/info/subscription/citylist?region=서울특별시
+```
+
+#### Get My Subscriptions (by Interest Locations)
+```http
+GET /api/info/subscription/mysubscriptions
 Authorization: Bearer {access_token}
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "id": 1,
-        "houseName": "래미안 강남포레스트",
-        "houseManageNo": "2024000001",
-        "publicationNumber": "2024강남01",
-        "supplyLocation": "서울특별시 강남구 대치동",
-        "region": "서울특별시",
-        "city": "강남구",
-        "district": "대치동",
-        "receptionStartDate": "2024-07-01",
-        "receptionEndDate": "2024-07-03",
-        "specialSupplyStartDate": "2024-06-25",
-        "specialSupplyEndDate": "2024-06-27",
-        "coordinates": {
-            "latitude": 37.5665,
-            "longitude": 127.0015
-        },
-        "priceInfo": [
-            {
-                "housingType": "84㎡",
-                "supplyPrice": 1200000000,
-                "supplyCount": 100
-            }
-        ],
-        "specialSupplyTargets": {
-            "multichild": 20,
-            "newlywed": 30,
-            "firstTime": 25
-        }
-    }
-}
-```
-
-#### Search Subscriptions
+#### Like Subscription
 ```http
-GET /api/info/subscriptions?region=서울특별시&city=강남구&page=0&size=10&sort=receptionStartDate,desc
+POST /api/info/subscription/like/{subscriptionId}
 Authorization: Bearer {access_token}
 ```
 
-**Query Parameters:**
-- `region`: 시/도 (optional)
-- `city`: 시/군/구 (optional)
-- `year`: 년도 (optional)
-- `month`: 월 (optional)
-- `page`: 페이지 번호 (default: 0)
-- `size`: 페이지 크기 (default: 10)
-- `sort`: 정렬 기준 (default: receptionStartDate,desc)
-
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "content": [
-            {
-                "id": 1,
-                "houseName": "래미안 강남포레스트",
-                "supplyLocation": "서울특별시 강남구 대치동",
-                "receptionStartDate": "2024-07-01",
-                "receptionEndDate": "2024-07-03",
-                "isLiked": false
-            }
-        ],
-        "pageable": {
-            "pageNumber": 0,
-            "pageSize": 10,
-            "sort": {
-                "sorted": true,
-                "orderBy": "receptionStartDate",
-                "direction": "DESC"
-            }
-        },
-        "totalElements": 150,
-        "totalPages": 15,
-        "first": true,
-        "last": false
-    }
-}
-```
-
-#### Get User Interest Subscriptions
+#### Unlike Subscription
 ```http
-GET /api/info/interest-subscriptions?page=0&size=10
+DELETE /api/info/subscription/like/{subscriptionLikeId}
 Authorization: Bearer {access_token}
 ```
 
-#### Get Infrastructure Information
+#### Get Liked Subscriptions
 ```http
-GET /api/info/infrastructure?latitude=37.5665&longitude=127.0015
+GET /api/info/subscription/like
 Authorization: Bearer {access_token}
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "schools": [
-            {
-                "name": "대치초등학교",
-                "category": "초등학교",
-                "type": "공립",
-                "distance": 0.3,
-                "address": "서울특별시 강남구 대치동"
-            }
-        ],
-        "stations": [
-            {
-                "name": "대치역",
-                "line": "3호선",
-                "type": "지하철",
-                "distance": 0.5
-            }
-        ],
-        "publicFacilities": [
-            {
-                "name": "강남구청",
-                "category": "행정기관",
-                "distance": 1.2
-            }
-        ]
-    }
-}
-```
-
-#### Like/Unlike Subscription
+#### Check If Subscription Is Liked
 ```http
-POST /api/info/subscription/{subscriptionId}/like
+GET /api/info/subscription/islike?id={subscriptionId}
 Authorization: Bearer {access_token}
 ```
 
+#### Get Upcoming Liked Subscriptions
 ```http
-DELETE /api/info/subscription/{subscriptionId}/like
+GET /api/info/subscription/like/upcoming
 Authorization: Bearer {access_token}
 ```
 
-### 💬 Community (`/api/community`)
-
-#### Get Posts
+#### Get Closing Liked Subscriptions
 ```http
-GET /api/community/posts?category=SUBSCRIPTION_INQUIRY&page=0&size=10&sort=createdDate,desc
+GET /api/info/subscription/like/closing
 Authorization: Bearer {access_token}
 ```
 
-**Query Parameters:**
-- `category`: POST 카테고리 (optional)
-- `search`: 검색어 (optional)
-- `page`: 페이지 번호 (default: 0)
-- `size`: 페이지 크기 (default: 10)
-- `sort`: 정렬 기준 (default: createdDate,desc)
-
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "content": [
-            {
-                "id": 1,
-                "title": "강남구 청약 질문",
-                "content": "강남구 신규 분양 아파트 청약 자격 조건이 궁금합니다.",
-                "username": "청약초보",
-                "category": "SUBSCRIPTION_INQUIRY",
-                "views": 150,
-                "likes": 5,
-                "commentCount": 3,
-                "createdDate": "2024-06-19T10:30:00"
-            }
-        ],
-        "totalElements": 50,
-        "totalPages": 5
-    }
-}
+#### Get Subscriptions by Month
+```http
+GET /api/info/subscription/bymonth?year=2024&month=6
 ```
+
+#### Get Price Summary (by District)
+```http
+GET /api/info/subscription/PriceSummary?region=서울특별시&city=강남구&umdNm=대치동
+```
+
+#### Get Price Summary (by Region)
+```http
+GET /api/info/subscription/PriceSummary/Region?region=서울특별시&city=강남구
+```
+
+#### Get Popular Subscription
+```http
+GET /api/info/subscription/popular
+```
+
+---
+
+### Community (`/api/community`) — CommunityController
 
 #### Create Post
 ```http
@@ -344,266 +251,181 @@ Content-Type: application/json
 }
 ```
 
-#### Get Post Details
+#### Get Posts (Paginated)
 ```http
-GET /api/community/posts/{postId}
-Authorization: Bearer {access_token}
+GET /api/community/posts?sort=time&page=0&size=10
 ```
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "id": 1,
-        "title": "강남구 청약 질문",
-        "content": "강남구 신규 분양 아파트 청약 자격 조건이 궁금합니다.",
-        "username": "청약초보",
-        "category": "SUBSCRIPTION_INQUIRY",
-        "views": 151,
-        "likes": 5,
-        "createdDate": "2024-06-19T10:30:00",
-        "comments": [
-            {
-                "id": 1,
-                "content": "1순위 자격은 청약통장 가입 기간과 지역에 따라 결정됩니다.",
-                "username": "청약전문가",
-                "createdDate": "2024-06-19T11:00:00",
-                "replies": [
-                    {
-                        "id": 1,
-                        "content": "감사합니다! 추가 질문이 있어요.",
-                        "username": "청약초보",
-                        "createdDate": "2024-06-19T11:15:00"
-                    }
-                ]
-            }
-        ]
-    }
-}
+#### Get Post Detail
+```http
+GET /api/community/post/{id}
+Authorization: Bearer {access_token} (optional)
 ```
 
-#### Like/Unlike Post
+#### Update Post
 ```http
-POST /api/community/posts/{postId}/like
-Authorization: Bearer {access_token}
-```
-
-```http
-POST /api/community/posts/{postId}/dislike
-Authorization: Bearer {access_token}
-```
-
-#### Add Comment
-```http
-POST /api/community/posts/{postId}/comments
+PATCH /api/community/post/{id}
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-    "content": "1순위 자격은 청약통장 가입 기간과 지역에 따라 결정됩니다."
+    "title": "수정된 제목",
+    "content": "수정된 내용"
 }
 ```
 
-#### Add Reply
+#### Delete Post
 ```http
-POST /api/community/comments/{commentId}/replies
+DELETE /api/community/post/{id}
+Authorization: Bearer {access_token}
+```
+
+#### Like Post
+```http
+POST /api/community/post/like/{id}
+Authorization: Bearer {access_token} (optional)
+```
+
+#### Dislike Post
+```http
+POST /api/community/post/dislike/{id}
+Authorization: Bearer {access_token} (optional)
+```
+
+#### Get My Posts
+```http
+GET /api/community/post/my?sort=time&page=0&size=10
+Authorization: Bearer {access_token}
+```
+
+#### Add Comment to Post
+```http
+POST /api/community/comment/{postId}
 Authorization: Bearer {access_token}
 Content-Type: application/json
 
 {
-    "content": "감사합니다! 추가 질문이 있어요."
+    "content": "댓글 내용"
 }
 ```
 
-### 🏦 Finance (`/api/finance`)
-
-#### Get House Loans
+#### Add Reply to Comment
 ```http
-GET /api/finance/house-loans?page=0&size=10
+POST /api/community/comment/comment/{commentId}
 Authorization: Bearer {access_token}
-```
+Content-Type: application/json
 
-**Response (200 OK):**
-```json
 {
-    "status": "success",
-    "data": {
-        "content": [
-            {
-                "id": 1,
-                "bankName": "국민은행",
-                "productName": "주택담보대출 우대형",
-                "joinMethod": "인터넷, 스마트폰, 영업점",
-                "loanLimit": "최대 10억원",
-                "interestRateMin": 3.5,
-                "interestRateMax": 5.2,
-                "interestRateAvg": 4.1
-            }
-        ],
-        "totalElements": 25
-    }
+    "content": "대댓글 내용"
 }
 ```
 
-#### Get Mortgages
+---
+
+### Home / Main (`/api/main`) — HomeController
+
+#### Get Popular Locations
 ```http
-GET /api/finance/mortgages?page=0&size=10
+GET /api/main/popular-locations
+```
+
+#### Get My Interest Locations
+```http
+GET /api/main/my-locations
 Authorization: Bearer {access_token}
 ```
 
-### 📰 News (`/api/news`)
+#### Get Popular Content (Posts)
+```http
+GET /api/main/popular-content
+```
+
+---
+
+### News (`/api/news`) — NewsController
 
 #### Manual News Crawl (Admin Only)
 ```http
 POST /api/news/crawl
 Authorization: Bearer {admin_access_token}
 ```
+Requires `ADMIN` role.
 
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "message": "뉴스 크롤링이 완료되었습니다.",
-        "articlesProcessed": 45,
-        "categorizedNews": {
-            "policy": 12,
-            "subscription": 18,
-            "market": 15
-        }
-    }
-}
-```
+---
 
-### 🏠 Home Dashboard (`/api/home`)
+### Admin Data Management (`/api/data`) — DataController
 
-#### Get Dashboard Data
+All endpoints require `ADMIN` role.
+
+#### Fetch Apartment Subscription Data
 ```http
-GET /api/home/dashboard
-Authorization: Bearer {access_token}
-```
-
-**Response (200 OK):**
-```json
-{
-    "status": "success",
-    "data": {
-        "popularLocations": [
-            {
-                "region": "서울특별시",
-                "city": "강남구",
-                "subscriptionCount": 15,
-                "popularity": 85
-            }
-        ],
-        "recentSubscriptions": [
-            {
-                "id": 1,
-                "houseName": "래미안 강남포레스트",
-                "supplyLocation": "서울특별시 강남구 대치동",
-                "receptionStartDate": "2024-07-01"
-            }
-        ],
-        "trendingPosts": [
-            {
-                "id": 1,
-                "title": "강남구 청약 질문",
-                "views": 150,
-                "likes": 5
-            }
-        ]
-    }
-}
-```
-
-#### Get Popular Locations
-```http
-GET /api/home/popular-locations
-```
-
-### 🔧 Admin Data Management (`/api/data`)
-
-#### Refresh Subscription Data (Admin Only)
-```http
-POST /api/data/refresh-subscriptions
+GET /api/data/subscription/apartment
 Authorization: Bearer {admin_access_token}
 ```
 
-#### Update Real Estate Prices (Admin Only)
+#### Update All Coordinates
 ```http
-POST /api/data/update-prices?yyyyMM=202406
+PUT /api/data/updateAllCoordinates
 Authorization: Bearer {admin_access_token}
 ```
 
-## 🔌 WebSocket API
+#### Fetch Mortgage Data
+```http
+GET /api/data/mortgage
+Authorization: Bearer {admin_access_token}
+```
 
-### Real-time Chat
+#### Fetch House Loan Data
+```http
+GET /api/data/hosueloan
+Authorization: Bearer {admin_access_token}
+```
 
-#### Connection Endpoint
+#### Refresh Real Estate Price Data
+```http
+POST /api/data/refresh?yyyyMM=202406
+Authorization: Bearer {admin_access_token}
+```
+
+---
+
+## WebSocket API
+
+### Real-time AI Chat
+
+#### Connection
 ```
 ws://localhost:8080/ws/chat
 ```
 
-#### Authentication
-Include JWT token in handshake:
+JWT token is validated during handshake via `JwtHandshakeInterceptor`.
+
 ```javascript
-const token = "your_jwt_token";
 const socket = new WebSocket(`ws://localhost:8080/ws/chat?token=${token}`);
 ```
 
 #### Message Format
-**Send Message:**
-```json
-{
-    "type": "chat",
-    "content": "강남구 청약 자격 조건이 궁금해요"
-}
+Send a text message directly (plain text, not JSON):
+```
+강남구 청약 자격 조건이 궁금해요
 ```
 
-**Receive Message:**
-```json
-{
-    "type": "response",
-    "content": "강남구 청약을 위해서는 다음 조건들을 확인해보세요:\n1. 청약통장 가입 기간\n2. 지역 거주 요건\n3. 소득 및 자산 조건",
-    "timestamp": "2024-06-19T14:30:00Z"
-}
-```
+The server responds with AI-generated text via Gemini 2.0.
 
 #### Usage Limits
-- **Daily Limit**: 15 messages per user
-- **Rate Limiting**: 1 message per 2 seconds
-- **Session Timeout**: 30 minutes of inactivity
+- **Daily Limit**: 15 messages per user (resets at 00:00 UTC)
+- **Concurrent Sessions**: One session per user
+- **Auto-summarization**: Conversation is summarized after 5+ messages
 
-#### Connection Events
-```javascript
-socket.onopen = function(event) {
-    console.log("Chat connected");
-};
+---
 
-socket.onmessage = function(event) {
-    const message = JSON.parse(event.data);
-    console.log("AI Response:", message.content);
-};
-
-socket.onerror = function(error) {
-    console.log("WebSocket error:", error);
-};
-
-socket.onclose = function(event) {
-    console.log("Chat disconnected");
-};
-```
-
-## 📊 Response Format
+## Response Format
 
 ### Success Response
 ```json
 {
     "status": "success",
-    "data": {
-        // Response data
-    }
+    "data": { ... }
 }
 ```
 
@@ -613,65 +435,14 @@ socket.onclose = function(event) {
     "status": "fail",
     "data": {
         "code": "AUTH001",
-        "message": "인증이 필요한 서비스입니다",
-        "details": "JWT token is missing or invalid"
+        "message": "유효하지 않은 JWT 서명"
     }
 }
 ```
 
-## 🚫 Error Codes
-
-### Authentication Errors
-- **AUTH001**: 인증이 필요한 서비스입니다
-- **AUTH002**: 권한이 없습니다
-- **AUTH003**: 유효하지 않은 JWT 서명
-- **AUTH004**: 만료된 JWT 토큰
-- **AUTH005**: JWT 토큰이 블랙리스트에 있습니다
-
-### User Management Errors
-- **SIGN001**: 이미 존재하는 회원입니다
-- **SIGN002**: 존재하지 않는 회원입니다
-- **SIGN003**: 비밀번호가 일치하지 않습니다
-- **SIGN004**: 유효하지 않은 이메일 형식입니다
-
-### Community Errors
-- **POST001**: 게시글을 찾을 수 없습니다
-- **POST002**: 게시글 작성 권한이 없습니다
-- **COMMENT001**: 댓글을 찾을 수 없습니다
-
-### Subscription Errors
-- **SUB001**: 청약 정보를 찾을 수 없습니다
-- **SUB002**: 청약 기간이 아닙니다
-
-## 🔄 Rate Limiting
-
-### API Rate Limits
-- **Authentication**: 5 requests per minute per IP
-- **General API**: 100 requests per minute per user
-- **WebSocket**: 1 message per 2 seconds per user
-- **Admin API**: 10 requests per minute per admin
-
-### Headers
-Response includes rate limit headers:
-```http
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1624123456
-```
-
-## 📚 OpenAPI Documentation
-
-### Interactive Documentation
-Visit `/swagger-ui` when the application is running for interactive API documentation.
-
-### Swagger Configuration
-- **OpenAPI Version**: 3.0
-- **Authentication**: Bearer Token support
-- **Try It Out**: Interactive API testing
-- **Code Examples**: Multiple language examples
+For the complete list of error codes, see [Error Codes](./error-codes.md).
 
 ---
 
-**API Documentation Version**: 1.0  
-**Last Updated**: 2024-06-19  
+**Last Updated**: 2026-03-05
 **Base URL**: `http://localhost:8080/api`

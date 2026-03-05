@@ -19,14 +19,13 @@ real estate platform.
 - **[Architecture Decisions](./architecture-decisions.md)** - System design decisions and rationale
 - **[Deployment Guide](./deployment-guide.md)** - Environment setup and deployment procedures
 - **[Contributing Guidelines](./contributing.md)** - Code standards and contribution workflow
-- **[Testing Guide](./testing-guide.md)** - Testing strategies and best practices
+- **[Test Coverage Guide](./TEST_COVERAGE_GUIDE.md)** - JaCoCo testing and coverage strategies
 
 ### Reference Materials
 
 - **[Error Codes](./error-codes.md)** - Complete error code reference
 - **[Korean Business Rules](./korean-business-rules.md)** - Real estate domain knowledge
 - **[External APIs](./external-apis.md)** - Third-party integration documentation
-- **[Security Guidelines](./security.md)** - Security implementation and best practices
 
 ## 🚀 Quick Start for New Team Members
 
@@ -53,5 +52,5 @@ real estate platform.
 
 ---
 
-**Last Updated**: 2024-06-19  
+**Last Updated**: 2026-03-05
 **Maintained By**: CheonYakPlanet Development Team

@@ -199,7 +199,8 @@ java -jar -Dspring.profiles.active=prod build/libs/be-1.0.0.jar</code></pre>
       </article>
 
       <article>
-        <h3>🐳 Docker Deployment</h3>
+        <h3>🐳 Docker Deployment (Example / Recommended)</h3>
+        <p><strong>Note</strong>: Docker files (Dockerfile, docker-compose.yml) are not included in the project repository. The configurations below are recommended examples for containerized deployment.</p>
         <h4>Dockerfile</h4>
         <pre><code class="language-dockerfile">FROM openjdk:17-jdk-slim
 WORKDIR /app
@@ -377,7 +378,8 @@ curl http://localhost:8080/actuator/health/external-apis</code></pre>
       </article>
 
       <article>
-        <h3>🔄 CI/CD Pipeline</h3>
+        <h3>🔄 CI/CD Pipeline (Example / Recommended)</h3>
+        <p><strong>Note</strong>: CI/CD pipeline configuration is not included in the project repository. The example below is a recommended GitHub Actions workflow.</p>
         <h4>GitHub Actions</h4>
         <p><strong>.github/workflows/deploy.yml</strong></p>
         <pre><code class="language-yaml">name: Deploy to Production

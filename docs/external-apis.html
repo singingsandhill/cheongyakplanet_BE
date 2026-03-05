@@ -91,7 +91,7 @@ public class SubscriptionService {
   public String updateSubAPT() {
     String requestUrl = subAptApiUrl + "?page=1&perPage=50&serviceKey=" + apiKey;
     try {
-      ResponseEntity<String> response = restTemplate.exchange(
+      ResponseEntity&lt;String&gt; response = restTemplate.exchange(
         requestUrl, HttpMethod.GET, null, String.class);
       processSubscriptionData(response.getBody());
     } catch (Exception e) {
@@ -141,33 +141,33 @@ public class SubscriptionService {
         </ul>
 
         <h5>응답 예시</h5>
-        <pre><code class="language-xml"><response>
-  <body>
-    <items>
-      <item>
-        <거래금액>120,000</거래금액>
-        <건축년도>2020</건축년도>
-        <년>2024</년>
-        <법정동>대치동</법정동>
-        <아파트>래미안</아파트>
-        <월>06</월>
-        <일>15</일>
-        <전용면적>84.93</전용면적>
-        <지번>123-1</지번>
-        <층>15</층>
-      </item>
-    </items>
-  </body>
-</response></code></pre>
+        <pre><code class="language-xml">&lt;response&gt;
+  &lt;body&gt;
+    &lt;items&gt;
+      &lt;item&gt;
+        &lt;거래금액&gt;120,000&lt;/거래금액&gt;
+        &lt;건축년도&gt;2020&lt;/건축년도&gt;
+        &lt;년&gt;2024&lt;/년&gt;
+        &lt;법정동&gt;대치동&lt;/법정동&gt;
+        &lt;아파트&gt;래미안&lt;/아파트&gt;
+        &lt;월&gt;06&lt;/월&gt;
+        &lt;일&gt;15&lt;/일&gt;
+        &lt;전용면적&gt;84.93&lt;/전용면적&gt;
+        &lt;지번&gt;123-1&lt;/지번&gt;
+        &lt;층&gt;15&lt;/층&gt;
+      &lt;/item&gt;
+    &lt;/items&gt;
+  &lt;/body&gt;
+&lt;/response&gt;</code></pre>
 
         <h5>구현 세부 정보</h5>
         <p><strong>비동기 처리:</strong></p>
         <pre><code class="language-java">@Async
 @Retryable(value = Exception.class, maxAttempts = 3)
-public CompletableFuture<Void> collectRealPriceData(String dealYMD) {
-  List<SggCode> codes = sggCodeRepository.findAll();
-  List<CompletableFuture<Void>> futures = codes.stream()
-    .map(code -> CompletableFuture.runAsync(() ->
+public CompletableFuture&lt;Void&gt; collectRealPriceData(String dealYMD) {
+  List&lt;SggCode&gt; codes = sggCodeRepository.findAll();
+  List&lt;CompletableFuture&lt;Void&gt;&gt; futures = codes.stream()
+    .map(code -&gt; CompletableFuture.runAsync(() -&gt;
       processCodeData(code, dealYMD), taskExecutor))
     .collect(Collectors.toList());
   return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
@@ -231,157 +231,240 @@ Authorization: KakaoAK {REST_API_KEY}</code></pre>
 }</code></pre>
 
         <h5>구현 세부 정보</h5>
-        <p><strong>WebClient 설정:</strong></p>
-        <pre><code class="language-java">@Configuration
-public class WebClientConfig {
-
-  @Value("${kakao.api.key}")
-  private String kakaoApiKey;
-
-  @Bean
-  public WebClient kakaoWebClient() {
-    return WebClient.builder()
-      .baseUrl("https://dapi.kakao.com")
-      .defaultHeader("Authorization", "KakaoAK " + kakaoApiKey)
-      .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
-      .build();
-  }
-}
-</code></pre>
-
-        <p><strong>주소 지오코딩 서비스:</strong></p>
-        <pre><code class="language-java">@Service
-public class GeocodingService {
-
-  private final WebClient webClient;
-
-  public GeocodingService(WebClient kakaoWebClient) {
-    this.webClient = kakaoWebClient;
-  }
-
-  public Mono<CoordinateResponseDTO> getCoordinates(String address) {
-    return webClient.get()
-      .uri(uriBuilder -> uriBuilder
-        .path("/v2/local/search/address.json")
-        .queryParam("query", address)
-        .build())
-      .retrieve()
-      .bodyToMono(String.class)
-      .map(this::parseCoordinates)
-      .onErrorReturn(new CoordinateResponseDTO(null, null));
-  }
-
-  private CoordinateResponseDTO parseCoordinates(String jsonResponse) {
-    try {
-      JsonNode root = new ObjectMapper().readTree(jsonResponse);
-      JsonNode document = root.path("documents").get(0);
-      if (document != null) {
-        double latitude = document.path("y").asDouble();
-        double longitude = document.path("x").asDouble();
-        return new CoordinateResponseDTO(latitude, longitude);
-      }
-    } catch (Exception e) {
-      log.error("좌표 파싱 실패: {}", e.getMessage());
-    }
-    return new CoordinateResponseDTO(null, null);
-  }
-}
-</code></pre>
+        <p>지오코딩은 <code>SubscriptionService</code> 내에서 <code>RestTemplate</code>을 사용하여 카카오 주소 검색 API를 직접 호출하는 방식으로 처리됩니다. 좌표는 <code>SubscriptionInfo</code> 엔티티에 저장됩니다.</p>
+        <p>관리자 엔드포인트 <code>PUT /api/data/updateAllCoordinates</code>를 통해 모든 청약에 대한 일괄 좌표 업데이트를 실행할 수 있습니다.</p>
       </article>
 
       <article>
-        <h3>🔧 통합 패턴</h3>
+        <h4>4. 네이버 뉴스 API</h4>
 
-        <h4>1. 재시도 메커니즘</h4>
-        <pre><code class="language-java">@Retryable(
-  value = {RestClientException.class, SocketTimeoutException.class},
-  maxAttempts = 3,
-  backoff = @Backoff(delay = 1000, multiplier = 2)
-)
-public String callExternalAPI(String url) {
-  return restTemplate.getForObject(url, String.class);
+        <h5>목적</h5>
+        <p>시장 인텔리전스 및 사용자 정보를 위한 한국 부동산 뉴스 수집</p>
+
+        <h5>API 세부 정보</h5>
+        <ul>
+          <li><strong>제공자</strong>: 네이버 주식회사</li>
+          <li><strong>기본 URL</strong>: <code>https://openapi.naver.com/v1/search</code></li>
+          <li><strong>인증</strong>: Client ID &amp; Client Secret</li>
+          <li><strong>호출 제한</strong>: 1일 25,000건</li>
+          <li><strong>데이터 형식</strong>: JSON</li>
+        </ul>
+
+        <h5>사용된 엔드포인트</h5>
+        <h6>뉴스 검색</h6>
+        <pre><code class="language-http">GET /news.json
+X-Naver-Client-Id: {CLIENT_ID}
+X-Naver-Client-Secret: {CLIENT_SECRET}</code></pre>
+
+        <h5>매개변수</h5>
+        <ul>
+          <li><code>query</code>: 검색 키워드</li>
+          <li><code>display</code>: 결과 수 (1-100)</li>
+          <li><code>start</code>: 시작 위치 (1-1000)</li>
+          <li><code>sort</code>: 정렬 순서 (sim, date)</li>
+        </ul>
+
+        <h5>응답 예시</h5>
+        <pre><code class="language-json">{
+  "lastBuildDate": "Mon, 19 Jun 2024 17:41:29 +0900",
+  "total": 8420,
+  "start": 1,
+  "display": 10,
+  "items": [
+    {
+      "title": "[부동산] 강남구 아파트 청약 경쟁률 상승",
+      "originallink": "https://example.com/news/123",
+      "link": "https://news.naver.com/main/read.nhn?mode=...",
+      "description": "서울 강남구 아파트 청약 경쟁률이 급상승하고 있다...",
+      "pubDate": "Mon, 19 Jun 2024 16:30:00 +0900"
+    }
+  ]
 }</code></pre>
 
-        <h4>2. 회로 차단기</h4>
-        <pre><code class="language-java">@Component
-public class ExternalAPICircuitBreaker {
+        <h5>구현 세부 정보</h5>
 
-  private final RestTemplate restTemplate;
-  private final CircuitBreaker circuitBreaker = CircuitBreaker.ofDefaults("externalAPI");
+        <p><strong>크롤링 키워드:</strong></p>
+        <ul>
+          <li>부동산 정책, 주택 청약, 청약 당첨, 분양, 아파트 청약</li>
+          <li>주택공급, LH청약, SH청약, 공공분양, 민간분양</li>
+          <li>부동산, 주택, 아파트, LH, 부동산정책, 주택정책</li>
+          <li>임대차, 전월세, 재건축, 국토교통부, 가계대출, 주담대, 시세, 매매</li>
+        </ul>
 
-  public String callWithCircuitBreaker(String url) {
-    return circuitBreaker.executeSupplier(() -> restTemplate.getForObject(url, String.class));
+        <p><strong>자동 실행 스케줄:</strong></p>
+        <ul>
+          <li><strong>Cron</strong>: <code>0 30 0 * * ?</code> (매일 00:30 KST)</li>
+          <li><code>Scheduler.java</code>의 <code>dailyNewsUpdate()</code>에서 정의</li>
+        </ul>
+
+        <p><strong>포스트 카테고리 분류:</strong></p>
+        <ul>
+          <li>청약/분양 관련 → <code>SUBSCRIPTION_INFO</code> 카테고리</li>
+          <li>정책/규제/기타 → <code>INFO_SHARE</code> 카테고리</li>
+        </ul>
+
+        <p><strong>중복 제거:</strong></p>
+        <ul>
+          <li>24시간 이내 동일 제목의 포스트가 있으면 생성하지 않음</li>
+          <li>제목의 첫 20자 기준으로 중복 검사</li>
+        </ul>
+
+        <p><strong>시스템 사용자:</strong> 뉴스 포스트는 <code>jjsus0307@gmail.com</code> 계정으로 생성됩니다.</p>
+
+        <p><strong>수동 실행:</strong></p>
+        <pre><code class="language-http">POST /api/news/crawl
+Authorization: Bearer {admin_access_token}</code></pre>
+        <p><code>ADMIN</code> 역할이 필요합니다.</p>
+
+        <p><strong>환경 변수:</strong></p>
+        <pre><code class="language-bash">NAVER_CLIENT_ID=your_naver_client_id
+NAVER_CLIENT_SECRET=your_naver_client_secret</code></pre>
+      </article>
+
+      <article>
+        <h4>5. Google Gemini API</h4>
+
+        <h5>목적</h5>
+        <p>한국 부동산 질문에 대한 AI 기반 대화형 지원을 제공합니다.</p>
+
+        <h5>API 세부 정보</h5>
+        <ul>
+          <li><strong>제공자</strong>: Google AI</li>
+          <li><strong>기본 URL</strong>: <code>https://generativelanguage.googleapis.com</code></li>
+          <li><strong>인증</strong>: API 키</li>
+          <li><strong>호출 제한</strong>: 설정 가능한 할당량</li>
+          <li><strong>데이터 형식</strong>: JSON</li>
+        </ul>
+
+        <h5>사용된 엔드포인트</h5>
+        <h6>콘텐츠 생성</h6>
+        <pre><code class="language-http">POST /v1/models/gemini-pro:generateContent
+Content-Type: application/json
+Authorization: Bearer {API_KEY}</code></pre>
+
+        <h5>요청 예시</h5>
+        <pre><code class="language-json">{
+  "contents": [
+    {
+      "parts": [
+        {
+          "text": "강남구 청약 자격 조건에 대해 설명해주세요."
+        }
+      ]
+    }
+  ],
+  "generationConfig": {
+    "temperature": 0.7,
+    "maxOutputTokens": 1000
   }
-}
-</code></pre>
+}</code></pre>
 
-        <h4>3. 호출 제한</h4>
+        <h5>응답 예시</h5>
+        <pre><code class="language-json">{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "강남구 청약 자격 조건은 다음과 같습니다:\n\n1. 청약통장 가입 기간\n2. 소득 및 자산 기준\n3. 거주 지역 요건\n4. 주택 보유 현황\n\n각 조건에 대해 자세히 설명드리겠습니다..."
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ]
+}</code></pre>
+
+        <h5>구현 세부 정보</h5>
+        <p><strong>WebSocket 통합:</strong></p>
         <pre><code class="language-java">@Component
-public class RateLimitedAPIClient {
+public class ChatWebSocketHandler extends TextWebSocketHandler {
 
-  private final RestTemplate restTemplate;
-  private final RateLimiter rateLimiter = RateLimiter.create(1.0);
-
-  public String callAPI(String url) {
-    rateLimiter.acquire();
-    return restTemplate.getForObject(url, String.class);
+  @Override
+  public void afterConnectionEstablished(WebSocketSession session) {
+    // Gemini 컨텍스트를 사용하여 채팅 세션 초기화
+    ChatSession chatSession = new ChatSession();
+    chatSession.addMessage("system", "You are a Korean real estate expert...");
+    sessionManager.addSession(session.getId(), chatSession);
   }
-}
-</code></pre>
 
-        <h4>4. 캐싱 전략</h4>
-        <pre><code class="language-java">@Cacheable(value = "externalAPICache", key = "#url")
-public String getCachedAPIResponse(String url) {
-  return callExternalAPI(url);
-}
-
-@CacheEvict(value = "externalAPICache", allEntries = true)
-@Scheduled(fixedRate = 3600000)
-public void clearCache() {
-  log.info("외부 API 캐시 지우는 중");
+  @Override
+  protected void handleTextMessage(WebSocketSession session, TextMessage message) {
+    // 사용자 메시지 처리 및 Gemini 응답 받기
+    String response = geminiClient.generateResponse(message.getPayload());
+    session.sendMessage(new TextMessage(response));
+  }
 }
 </code></pre>
       </article>
 
       <article>
-        <h3>📊 모니터링 및 알림</h3>
+        <h3>권장 통합 패턴 (미구현)</h3>
+        <p>다음 패턴은 프로덕션 강화를 위해 권장되지만 현재 코드베이스에 <strong>구현되어 있지 않습니다</strong>.</p>
 
-        <h4>API 상태 확인</h4>
-        <pre><code class="language-java">@Component
-public class APIHealthIndicator implements HealthIndicator {
+        <h4>회로 차단기 (Circuit Breaker)</h4>
+        <p>Resilience4j <code>CircuitBreaker</code>를 사용하여 외부 API의 연쇄 장애를 처리합니다.</p>
 
-  private final SubscriptionService subscriptionService;
-  private final GeocodingService geocodingService;
-  private final NaverNewsAPI naverNewsAPI;
+        <h4>호출 제한 (Rate Limiting)</h4>
+        <p>Guava <code>RateLimiter</code> 또는 유사한 도구를 사용하여 발신 API 호출을 제한하고 제공자 한도를 준수합니다.</p>
 
-  @Override
-  public Health health() {
-    try {
-      testLHAPI();
-      testKakaoAPI();
-      testNaverAPI();
-      return Health.up().withDetail("apis", "모든 외부 API가 정상입니다.").build();
-    } catch (Exception e) {
-      return Health.down().withDetail("error", e.getMessage()).build();
-    }
-  }
+        <h4>캐싱 (Caching)</h4>
+        <p>Spring <code>@Cacheable</code>을 사용하여 자주 액세스하는 외부 API 응답을 캐시합니다.</p>
 
-  private void testLHAPI() throws Exception { subscriptionService.updateSubAPT(); }
-  private void testKakaoAPI() throws Exception { geocodingService.getCoordinates("서울시 강남구").block(); }
-  private void testNaverAPI() throws Exception { naverNewsAPI.fetchNews("부동산", 1, 1); }
-}
-</code></pre>
+        <h4>상태 확인 및 모니터링 (Health Checks &amp; Monitoring)</h4>
+        <p>Spring Boot Actuator <code>HealthIndicator</code>를 구현하여 외부 API 상태를 모니터링합니다.</p>
+      </article>
+
+      <article>
+        <h3>📋 설정</h3>
+
+        <h4>애플리케이션 속성</h4>
+        <pre><code class="language-properties"># LH Corporation API
+sub.apt.api.url=https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail
+sub.apt.api.key=${LH_API_KEY}
+
+# Ministry of Land API
+realestate.api.url=https://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade
+realestate.api.key=${REALESTATE_API_KEY}
+
+# Kakao API
+kakao.api.url=https://dapi.kakao.com
+kakao.api.key=${KAKAO_API_KEY}
+
+# Naver News API
+naver.client.id=${NAVER_CLIENT_ID}
+naver.client.secret=${NAVER_CLIENT_SECRET}
+
+# Gemini API
+gemini.api.url=https://generativelanguage.googleapis.com
+gemini.api.key=${GEMINI_API_KEY}
+
+# API Settings
+api.timeout.connect=5000
+api.timeout.read=30000
+api.retry.max-attempts=3
+api.retry.delay=1000</code></pre>
+
+        <h4>환경별 설정</h4>
+        <p><strong>개발 환경:</strong></p>
+        <pre><code class="language-properties">api.timeout.read=10000
+api.retry.max-attempts=1
+logging.level.org.springframework.web.client=DEBUG</code></pre>
+
+        <p><strong>운영 환경:</strong></p>
+        <pre><code class="language-properties">api.timeout.read=30000
+api.retry.max-attempts=3
+api.circuit-breaker.enabled=true</code></pre>
       </article>
 
       <hr />
-      <p><strong>외부 API 문서 버전</strong>: 1.0</p>
-      <p><strong>최종 업데이트</strong>: 2025-06-26</p>
+      <p><strong>최종 업데이트</strong>: 2026-03-05</p>
       <p><strong>총 통합</strong>: 5개 API</p>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-      <p>최종 업데이트: 2025-06-26 | <a href="../index.html">문서 홈으로</a></p>
+      <p>최종 업데이트: 2026-03-05 | <a href="../index.html">문서 홈으로</a></p>
     </footer>
   </div>
 </body>

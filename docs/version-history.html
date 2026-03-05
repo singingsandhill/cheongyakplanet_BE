@@ -217,47 +217,9 @@
         <br>
         <hr>
         <br>
-        <h3>🔧 구성 변경 사항</h3>
+        <h3>🔧 구성</h3>
         <br>
-        <h4>환경 변수 (버전 1.0.0)</h4>
-        <br>
-        <pre><code class="language-bash"># 데이터베이스 구성
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=planet
-DB_USERNAME=${DB_USERNAME}
-DB_PASSWORD=${DB_PASSWORD}
-
-# JWT 구성
-JWT_SECRET=${JWT_SECRET}
-JWT_ACCESS_TOKEN_EXPIRY=3600000 # 60분
-JWT_REFRESH_TOKEN_EXPIRY=86400000 # 24시간
-
-# 외부 API 키
-NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
-NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
-KAKAO_API_KEY=${KAKAO_API_KEY}
-LH_API_KEY=${LH_API_KEY}
-REALESTATE_API_KEY=${REALESTATE_API_KEY}
-GEMINI_API_KEY=${GEMINI_API_KEY}
-
-# 이메일 구성
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=${MAIL_USERNAME}
-MAIL_PASSWORD=${MAIL_PASSWORD}
-
-# 애플리케이션 구성
-CORS_ALLOWED_ORIGINS=http://localhost:3000,<a href="https://cheonyakplanet.site">https://cheonyakplanet.site</a>
-NEWS_CRAWL_ENABLED=true
-CHAT_DAILY_LIMIT=15</code></pre>
-        <br>
-        <h4>데이터베이스 스키마 버전</h4>
-        <ul>
-            <li><strong>버전 1.0</strong>: 모든 핵심 엔터티를 포함하는 초기 스키마</li>
-            <li><strong>마이그레이션</strong>: JPA 스키마 업데이트를 통해 자동화됨</li>
-            <li><strong>백업 전략</strong>: x</li>
-        </ul>
+        <p>환경 변수 및 구성 세부 정보는 <a href="./deployment-guide.md">Deployment Guide</a>를 참조하세요.</p>
         <br>
         <hr>
         <br>

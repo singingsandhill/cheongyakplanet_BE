@@ -36,13 +36,7 @@
                 <li><strong>JWT 인증</strong>: 액세스/리프레시 토큰 쌍을 통한 무상태 인증</li>
                 <li><strong>비밀번호 복구</strong>: 인증 코드를 통한 이메일 기반 비밀번호 재설정</li>
             </ul>
-            <p><strong>기술 세부 사항:</strong></p>
-            <ul>
-                <li>액세스 토큰: 60분 수명</li>
-                <li>리프레시 토큰: 24시간 수명</li>
-                <li>안전한 로그아웃을 위한 블랙리스트 기능을 포함한 데이터베이스 토큰 저장</li>
-                <li>BCrypt 비밀번호 암호화</li>
-            </ul>
+            <p>인증 아키텍처에 대한 자세한 내용은 <a href="./architecture-decisions.html">아키텍처 결정</a> ADR-002를 참조하세요.</p>
 
             <h5>1.2 사용자 프로필 관리</h5>
             <ul>
@@ -69,26 +63,15 @@
                 <li><strong>지역별 구성</strong>: 시/도, 시/군/구, 읍/면/동 계층으로 구성</li>
                 <li><strong>일정 추적</strong>: 청약 기간, 당첨자 발표, 계약 날짜</li>
             </ul>
-            <p><strong>데이터 출처:</strong></p>
-            <ul>
-                <li>LH 공사 (한국토지주택공사) API</li>
-                <li>국토교통부 API</li>
-                <li>행정 구역 코드 (시군구 코드)</li>
-            </ul>
 
             <h5>2.2 청약 자격 매칭</h5>
-            <ul>
-                <li><strong>순위 시스템</strong>: 1순위/2순위 우선순위 계산</li>
-                <li><strong>지역 자격</strong>: 해당지역/기타지역 자격 요건</li>
-                <li><strong>특별 공급 유형</strong>: 다자녀 가구, 신혼부부, 생애최초, 노부모 부양, 청년, 신생아 가구</li>
-            </ul>
-            <p><strong>매칭 알고리즘:</strong></p>
             <ul>
                 <li>사용자 재정 프로필 vs. 청약 요건</li>
                 <li>지역 선호도 매칭</li>
                 <li>특별 공급 유형 자격</li>
                 <li>우선 순위 계산</li>
             </ul>
+            <p>한국 비즈니스 도메인 용어 및 규칙(순위제, 특별공급 등)에 대해서는 <a href="./korean-business-rules.html">한국 비즈니스 규칙</a>을 참조하세요.</p>
 
             <h5>2.3 청약 세부 정보</h5>
             <ul>
@@ -158,31 +141,16 @@
             <ul>
                 <li><strong>다중 소스 크롤링</strong>: 20개 이상의 부동산 키워드를 사용한 네이버 뉴스 API</li>
                 <li><strong>콘텐츠 필터링</strong>: 고급 스팸 방지 및 품질 필터링</li>
-                <li><strong>신뢰할 수 있는 소스</strong>: 30개 이상의 검증된 뉴스 도메인</li>
-                <li><strong>일일 요약</strong>: 마크다운 형식의 자동화된 일일 보고서</li>
-            </ul>
-            <p><strong>모니터링되는 키워드:</strong></p>
-            <ul>
-                <li>부동산, 청약, 분양, LH, 아파트</li>
-                <li>주택정책, 임대차, 재건축, 재개발</li>
-                <li>국토교통부, 가계대출, 주담대</li>
+                <li><strong>일일 요약</strong>: 커뮤니티에 자동 게시되는 일일 보고서</li>
+                <li><strong>스케줄</strong>: 매일 한국 시간 00:30</li>
             </ul>
 
             <h5>5.2 콘텐츠 분류</h5>
             <ul>
-                <li><strong>정책 뉴스</strong>: 정부 정책 및 규제 업데이트</li>
-                <li><strong>청약/분양</strong>: 청약 및 분양 공고</li>
-                <li><strong>시장 동향</strong>: 시장 동향 및 가격 분석</li>
-                <li><strong>자동 게시</strong>: 분류된 콘텐츠를 포함한 일일 커뮤니티 게시물</li>
+                <li><strong>SUBSCRIPTION_INFO</strong>: 청약 및 분양 뉴스</li>
+                <li><strong>INFO_SHARE</strong>: 정책, 규제 및 기타 부동산 뉴스</li>
             </ul>
-
-            <h5>5.3 품질 보증</h5>
-            <ul>
-                <li><strong>다단계 필터링</strong>: 7단계 콘텐츠 품질 파이프라인</li>
-                <li><strong>광고 감지</strong>: 강력/약한 광고 키워드 필터링</li>
-                <li><strong>관련성 점수</strong>: 부동산 관련성 vs. 광고 점수</li>
-                <li><strong>중복 제거</strong>: 제목 기반 중복 방지</li>
-            </ul>
+            <p>자세한 뉴스 설정(키워드, API 키, 시스템 사용자)에 대해서는 <a href="./external-apis.html">외부 API - 네이버 뉴스 API</a>를 참조하세요.</p>
         </article>
 
         <article>
@@ -298,70 +266,16 @@
         </article>
 
         <article>
-            <h3>🔒 보안 기능</h3>
-
-            <h4>인증 보안</h4>
-            <ul>
-                <li><strong>데이터베이스 저장 방식의 JWT</strong>: 토큰 블랙리스트를 통한 향상된 보안</li>
-                <li><strong>비밀번호 암호화</strong>: 구성 가능한 복잡성을 가진 BCrypt</li>
-                <li><strong>세션 관리</strong>: 토큰 무효화를 통한 안전한 로그아웃</li>
-                <li><strong>역할 기반 접근</strong>: 메서드 수준 보안이 적용된 사용자/관리자 역할</li>
-            </ul>
-
-            <h4>데이터 보호</h4>
-            <ul>
-                <li><strong>소프트 삭제 패턴</strong>: 감사 추적을 통한 데이터 보존</li>
-                <li><strong>금융 데이터 암호화</strong>: 민감한 정보의 안전한 처리</li>
-                <li><strong>API 보안</strong>: 모든 엔드포인트에 대한 속도 제한 및 인증</li>
-                <li><strong>CORS 구성</strong>: 유연한 교차 출처 자원 공유</li>
-            </ul>
-
-            <h4>WebSocket 보안</h4>
-            <ul>
-                <li><strong>JWT 핸드셰이크</strong>: 보안 실시간 연결 설정</li>
-                <li><strong>사용량 제한</strong>: 채팅 기능에 대한 남용 방지 메커니즘</li>
-                <li><strong>연결 관리</strong>: 자동 정리 및 세션 관리</li>
-            </ul>
+            <h3>보안 및 아키텍처</h3>
+            <p>보안 구현 세부 사항(JWT, 소프트 삭제, CORS, 역할 기반 접근)에 대해서는 <a href="./architecture-decisions.html">아키텍처 결정</a>을 참조하세요.</p>
         </article>
 
-        <article>
-            <h3>📱 API 디자인</h3>
-
-            <h4>RESTful 아키텍처</h4>
-            <ul>
-                <li><strong>리소스 기반 URL</strong>: 명확하고 직관적인 엔드포인트 구조</li>
-                <li><strong>HTTP 메서드 사용</strong>: 적절한 GET, POST, PUT, DELETE 작업</li>
-                <li><strong>일관된 응답</strong>:표준화된 ApiResponse 래퍼</li>
-                <li><strong>오류 처리</strong>: 포괄적인 오류 코드 및 메시지</li>
-            </ul>
-            <h4>문서화</h4>
-            <ul>
-                <li><strong>OpenAPI 3.0</strong>: 예제가 포함된 완전한 API 사양</li>
-                <li><strong>Swagger UI</strong>: 대화형 API 문서</li>
-            </ul>
-        <h3>🚀 성능 기능</h3>
-        <h4>확장성</h4>
-        <ul>
-            <li><strong>비동기 처리</strong>: 외부 API 호출을 위한 비차단 I/O</li>
-            <li><strong>스레드 풀 관리</strong>: 데이터 처리를 위한 최적화된 동시성</li>
-            <li><strong>데이터베이스 최적화</strong>: 전략적 인덱싱 및 쿼리 최적화</li>
-        </ul>
-        <h4>모니터링</h4>
-        <ul>
-            <li><strong>상태 점검</strong>: 포괄적인 애플리케이션 상태 모니터링</li>
-            <li><strong>메트릭 수집</strong>: Prometheus 통합을 통한 성능 메트릭</li>
-            <li><strong>오류 추적</strong>: 상세한 로깅 및 오류 보고</li>
-            <li><strong>Auditing 추적</strong>: 디버깅을 위한 완전한 활동 추적</li>
-        </ul>
-        
         <hr>
         <br>
-        <p><strong>최종 업데이트</strong>: 2025-06-26</p>
-        <p><strong>기능 버전</strong>: 1.0</p>
-        <p></strong>플랫폼</strong>: 웹 API + WebSocket</p>
+        <p><strong>최종 업데이트</strong>: 2026-03-05</p>
     </section>
     <footer class="footer">
-        <p>최종 업데이트: 2025-06-26 | <a href="../index.html">문서 홈으로</a></p>
+        <p>최종 업데이트: 2026-03-05 | <a href="../index.html">문서 홈으로</a></p>
     </footer>
 </div>
 </body>

@@ -222,40 +222,9 @@ Authorization: KakaoAK {REST_API_KEY}
 
 #### Implementation Details
 
-**WebClient Configuration:**
-```java
-@Configuration
-public class WebClientConfig {
-    
-    @Bean
-    public WebClient kakaoWebClient() {
-        return WebClient.builder()
-            .baseUrl("https://dapi.kakao.com")
-            .defaultHeader("Authorization", "KakaoAK " + kakaoApiKey)
-            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(1024 * 1024))
-            .build();
-    }
-}
-```
+Geocoding is handled directly within `SubscriptionService` using `RestTemplate` to call the Kakao address search API. Coordinates are stored in `SubscriptionInfo` entities.
 
-**Address Geocoding Service:**
-```java
-@Service
-public class GeocodingService {
-    
-    public Mono<CoordinateResponseDTO> getCoordinates(String address) {
-        return webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/v2/local/search/address.json")
-                .queryParam("query", address)
-                .build())
-            .retrieve()
-            .bodyToMono(String.class)
-            .map(this::parseCoordinates)
-            .onErrorReturn(new CoordinateResponseDTO(null, null));
-    }
-}
-```
+The admin endpoint `PUT /api/data/updateAllCoordinates` triggers bulk coordinate updates for all subscriptions.
 
 ### 4. Naver News API
 
@@ -309,27 +278,37 @@ X-Naver-Client-Secret: {CLIENT_SECRET}
 
 #### Implementation Details
 
-**Keywords Monitored:**
-```java
-private static final List<String> REAL_ESTATE_KEYWORDS = Arrays.asList(
-    "부동산", "주택", "아파트", "청약", "분양", "LH",
-    "부동산정책", "주택정책", "임대차", "전월세", "재건축",
-    "국토교통부", "가계대출", "주담대", "시세", "매매"
-);
-```
+**Crawling Keywords:**
+- 부동산 정책, 주택 청약, 청약 당첨, 분양, 아파트 청약
+- 주택공급, LH청약, SH청약, 공공분양, 민간분양
+- 부동산, 주택, 아파트, LH, 부동산정책, 주택정책
+- 임대차, 전월세, 재건축, 국토교통부, 가계대출, 주담대, 시세, 매매
 
-**Content Filtering Pipeline:**
-```java
-public List<NewsItem> filterAndDeduplicateNews(List<NewsItem> newsItems) {
-    return newsItems.stream()
-        .filter(this::isValidNewsItem)
-        .filter(this::isNotDuplicate)
-        .filter(this::passesContentQualityCheck)
-        .filter(this::isRelevantToRealEstate)
-        .filter(this::isNotAdvertisement)
-        .filter(this::isFromTrustedSource)
-        .collect(Collectors.toList());
-}
+**Automated Schedule:**
+- **Cron**: `0 30 0 * * ?` (매일 00:30 KST)
+- Defined in `Scheduler.java` (`dailyNewsUpdate()`)
+
+**Post Categorization:**
+- 청약/분양 관련 → `SUBSCRIPTION_INFO` category
+- 정책/규제/기타 → `INFO_SHARE` category
+
+**Deduplication:**
+- 24시간 이내 동일 제목의 포스트가 있으면 생성하지 않음
+- 제목의 첫 20자 기준으로 중복 검사
+
+**System User:** 뉴스 포스트는 `jjsus0307@gmail.com` 계정으로 생성됩니다.
+
+**Manual Execution:**
+```http
+POST /api/news/crawl
+Authorization: Bearer {admin_access_token}
+```
+Requires `ADMIN` role.
+
+**Environment Variables:**
+```bash
+NAVER_CLIENT_ID=your_naver_client_id
+NAVER_CLIENT_SECRET=your_naver_client_secret
 ```
 
 ### 5. Google Gemini API
@@ -418,163 +397,25 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 }
 ```
 
-## 🔧 Integration Patterns
+## Recommended Integration Patterns (Not Yet Implemented)
 
-### 1. Retry Mechanism
+The following patterns are recommended for production hardening but are **not currently implemented** in the codebase.
 
-```java
-@Retryable(
-    value = {RestClientException.class, SocketTimeoutException.class},
-    maxAttempts = 3,
-    backoff = @Backoff(delay = 1000, multiplier = 2)
-)
-public String callExternalAPI(String url) {
-    return restTemplate.getForObject(url, String.class);
-}
-```
+### Circuit Breaker
 
-### 2. Circuit Breaker
+Use Resilience4j `CircuitBreaker` to handle cascading failures from external APIs.
 
-```java
-@Component
-public class ExternalAPICircuitBreaker {
-    
-    private final CircuitBreaker circuitBreaker = CircuitBreaker.ofDefaults("externalAPI");
-    
-    public String callWithCircuitBreaker(String url) {
-        return circuitBreaker.executeSupplier(() -> restTemplate.getForObject(url, String.class));
-    }
-}
-```
+### Rate Limiting
 
-### 3. Rate Limiting
+Use Guava `RateLimiter` or similar to throttle outgoing API calls and respect provider limits.
 
-```java
-@Component
-public class RateLimitedAPIClient {
-    
-    private final RateLimiter rateLimiter = RateLimiter.create(1.0); // 1 request per second
-    
-    public String callAPI(String url) {
-        rateLimiter.acquire();
-        return restTemplate.getForObject(url, String.class);
-    }
-}
-```
+### Caching
 
-### 4. Caching Strategy
+Use Spring `@Cacheable` for frequently accessed external API responses.
 
-```java
-@Cacheable(value = "externalAPICache", key = "#url")
-public String getCachedAPIResponse(String url) {
-    return callExternalAPI(url);
-}
+### Health Checks & Monitoring
 
-@CacheEvict(value = "externalAPICache", allEntries = true)
-@Scheduled(fixedRate = 3600000) // Clear cache every hour
-public void clearCache() {
-    log.info("Clearing external API cache");
-}
-```
-
-## 📊 Monitoring & Alerting
-
-### API Health Checks
-
-```java
-@Component
-public class APIHealthIndicator implements HealthIndicator {
-    
-    @Override
-    public Health health() {
-        try {
-            // Test each external API
-            testLHAPI();
-            testKakaoAPI();
-            testNaverAPI();
-            
-            return Health.up()
-                .withDetail("apis", "All external APIs are healthy")
-                .build();
-        } catch (Exception e) {
-            return Health.down()
-                .withDetail("error", e.getMessage())
-                .build();
-        }
-    }
-}
-```
-
-### Metrics Collection
-
-```java
-@Component
-public class APIMetrics {
-    
-    private final Counter apiCallCounter = Counter.builder("api.calls.total")
-        .tag("service", "external")
-        .register(Metrics.globalRegistry);
-    
-    private final Timer apiResponseTimer = Timer.builder("api.response.time")
-        .register(Metrics.globalRegistry);
-    
-    public <T> T measureAPICall(String apiName, Supplier<T> apiCall) {
-        return Timer.Sample.start()
-            .stop(apiResponseTimer.tag("api", apiName))
-            .recordCallable(() -> {
-                apiCallCounter.increment(Tags.of("api", apiName));
-                return apiCall.get();
-            });
-    }
-}
-```
-
-## 🚨 Error Handling
-
-### API-Specific Error Handling
-
-```java
-@Component
-public class ExternalAPIErrorHandler {
-    
-    public void handleLHAPIError(Exception e) {
-        if (e instanceof HttpClientErrorException) {
-            HttpClientErrorException httpError = (HttpClientErrorException) e;
-            if (httpError.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
-                // Handle rate limiting
-                scheduleRetryAfterDelay(60000); // 1 minute
-            }
-        }
-    }
-    
-    public void handleKakaoAPIError(Exception e) {
-        // Handle Kakao-specific errors
-        log.error("Kakao API error: {}", e.getMessage());
-        // Fallback to cached coordinates or default values
-    }
-}
-```
-
-### Fallback Strategies
-
-```java
-@Service
-public class NewsServiceWithFallback {
-    
-    public List<NewsItem> getNews() {
-        try {
-            return naverNewsAPI.fetchNews();
-        } catch (Exception e) {
-            log.warn("Naver News API failed, using cached news");
-            return getCachedNews();
-        }
-    }
-    
-    private List<NewsItem> getCachedNews() {
-        return newsRepository.findRecentNews(Pageable.ofSize(10));
-    }
-}
-```
+Implement Spring Boot Actuator `HealthIndicator` for external API status monitoring.
 
 ## 📋 Configuration
 
@@ -626,6 +467,5 @@ api.circuit-breaker.enabled=true
 
 ---
 
-**External API Documentation Version**: 1.0  
-**Last Updated**: 2024-06-19  
+**Last Updated**: 2026-03-05
 **Total Integrations**: 5 APIs

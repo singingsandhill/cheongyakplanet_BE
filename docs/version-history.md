@@ -232,48 +232,9 @@ This document tracks all notable changes, feature additions, and improvements to
 
 ---
 
-## 🔧 Configuration Changes
+## Configuration
 
-### Environment Variables (Version 1.0.0)
-
-```bash
-# Database Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=planet
-DB_USERNAME=${DB_USERNAME}
-DB_PASSWORD=${DB_PASSWORD}
-
-# JWT Configuration
-JWT_SECRET=${JWT_SECRET}
-JWT_ACCESS_TOKEN_EXPIRY=3600000    # 60 minutes
-JWT_REFRESH_TOKEN_EXPIRY=86400000  # 24 hours
-
-# External API Keys
-NAVER_CLIENT_ID=${NAVER_CLIENT_ID}
-NAVER_CLIENT_SECRET=${NAVER_CLIENT_SECRET}
-KAKAO_API_KEY=${KAKAO_API_KEY}
-LH_API_KEY=${LH_API_KEY}
-REALESTATE_API_KEY=${REALESTATE_API_KEY}
-GEMINI_API_KEY=${GEMINI_API_KEY}
-
-# Email Configuration
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USERNAME=${MAIL_USERNAME}
-MAIL_PASSWORD=${MAIL_PASSWORD}
-
-# Application Configuration
-CORS_ALLOWED_ORIGINS=http://localhost:3000,https://cheonyakplanet.com
-NEWS_CRAWL_ENABLED=true
-CHAT_DAILY_LIMIT=15
-```
-
-### Database Schema Versions
-
-- **Version 1.0**: Initial schema with all core entities
-- **Migrations**: Automated via JPA schema updates
-- **Backup Strategy**: Daily full backups, 15-minute transaction log backups
+For environment variables and configuration details, see [Deployment Guide](./deployment-guide.md).
 
 ---
 
